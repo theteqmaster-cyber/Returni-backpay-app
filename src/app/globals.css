@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --returni-orange: #E85D04;
+  --returni-dark: #1A1A2E;
+  --returni-cream: #F5F0E8;
+}
+
+body {
+  background: var(--returni-cream);
+  color: var(--returni-dark);
+  min-height: 100vh;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
