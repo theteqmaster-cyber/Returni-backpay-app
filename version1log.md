@@ -60,3 +60,7 @@ npm install
 cp .env.example .env.local   # Add your Supabase credentials
 npm run dev
 The app is ready for Vercel. Supabase env vars are required for the API routes; without them, the app returns a clear error instead of crashing.
+
+
+
+added supabase credentials
