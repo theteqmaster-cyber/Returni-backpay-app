@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-export default function MerchantLoginPage() {
+export default function AgentLoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,13 +27,16 @@ export default function MerchantLoginPage() {
         throw new Error(data.error || 'Login failed');
       }
 
-      if (data.role !== 'merchant_user' && data.role !== 'admin') {
-         throw new Error('Not authorized as merchant');
+      if (data.role !== 'agent' && data.role !== 'admin') {
+         throw new Error('Not authorized as agent');
       }
 
-      localStorage.setItem('returni_merchant_id', data.merchant_id || '');
+      if (data.agent_id) {
+         localStorage.setItem('returni_agent_id', data.agent_id);
+      }
       localStorage.setItem('returni_user_name', data.full_name || '');
-      router.push('/merchant/dashboard');
+
+      router.push('/agent/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -51,10 +54,10 @@ export default function MerchantLoginPage() {
         </div>
 
         <h1 className="text-3xl font-bold text-returni-dark mb-2">
-          Merchant Login
+          Agent Login
         </h1>
         <p className="text-returni-dark/60 mb-8">
-          Enter your email to access your dashboard
+          Enter your email to access your agent portal
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -68,7 +71,7 @@ export default function MerchantLoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-returni-green focus:border-transparent outline-none transition-all"
-              placeholder="you@example.com"
+              placeholder="agent@returni.app"
             />
           </div>
 
@@ -77,18 +80,11 @@ export default function MerchantLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 rounded-xl bg-returni-green text-white font-bold text-lg hover:bg-returni-darkGreen disabled:opacity-50 transition-colors shadow-md shadow-green-600/20 mt-4"
+            className="w-full py-4 rounded-xl bg-returni-dark text-white font-bold text-lg hover:bg-black disabled:opacity-50 transition-colors shadow-md mt-4"
           >
             {loading ? 'Logging in...' : 'Log In'}
           </button>
         </form>
-
-        <p className="mt-8 text-center text-sm text-returni-dark/60 font-medium">
-          New merchant?{' '}
-          <Link href="/merchant/setup" className="text-returni-blue hover:text-blue-700 underline transition-colors">
-            Sign up
-          </Link>
-        </p>
       </div>
     </main>
   );

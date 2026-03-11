@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       role: user.role,
+      full_name: user.full_name,
       merchant_id: merchantId,
       agent_id: agentId
     });

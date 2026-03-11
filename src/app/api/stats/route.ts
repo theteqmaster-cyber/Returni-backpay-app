@@ -20,39 +20,64 @@ export async function GET(request: NextRequest) {
     }
 
     const today = new Date().toISOString().split('T')[0];
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    const weekStart = weekAgo.toISOString().split('T')[0];
 
-    const { data: visits, error: visitsError } = await supabase
-      .from('visits')
-      .select('id, created_at, points_earned')
+    // Fetch merchant details (specifically the assigned agent ID)
+    const { data: merchantData, error: mInfoError } = await supabase
+       .from('merchants')
+       .select('agent_id')
+       .eq('id', merchantId)
+       .single();
+       
+    if (mInfoError) throw mInfoError;
+
+    let agentContact = null;
+    if (merchantData?.agent_id) {
+       // Join agent to user table
+       const { data: agentData } = await supabase
+         .from('agents')
+         .select('users!user_id(full_name, email, phone)')
+         .eq('id', merchantData.agent_id)
+         .single();
+         
+       if (agentData?.users) {
+          agentContact = agentData.users;
+       }
+    }
+
+    // Transactions today & total
+    const { data: transactions, error: txError } = await supabase
+      .from('transactions')
+      .select('id, amount, created_at')
       .eq('merchant_id', merchantId)
       .order('created_at', { ascending: false });
 
-    if (visitsError) throw visitsError;
+    if (txError) throw txError;
 
-    const totalVisits = visits?.length ?? 0;
-    const todayVisits = visits?.filter((v) => v.created_at.startsWith(today)).length ?? 0;
-    const weekVisits = visits?.filter((v) => v.created_at >= weekStart).length ?? 0;
-    const totalPointsGiven = visits?.reduce((s, v) => s + (v.points_earned || 0), 0) ?? 0;
+    const todayTransactions = transactions?.filter(t => t.created_at.startsWith(today)) || [];
+    const todaySalesCount = todayTransactions.length;
+    
+    // Total Volume
+    const totalVol = transactions?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0;
 
-    const { data: uniqueCustomers } = await supabase
-      .from('visits')
-      .select('customer_id')
-      .eq('merchant_id', merchantId);
+    // Unclaimed Liability
+    const { data: backpay, error: bpError } = await supabase
+      .from('backpay_records')
+      .select('backpay_amount')
+      .eq('merchant_id', merchantId)
+      .eq('status', 'unclaimed');
+      
+    if (bpError) throw bpError;
 
-    const uniqueCount = new Set(uniqueCustomers?.map((c) => c.customer_id) ?? []).size;
-
-    const recentVisits = visits?.slice(0, 10) ?? [];
+    const unclaimedLiability = backpay?.reduce((sum, b) => sum + Number(b.backpay_amount || 0), 0) || 0;
+    const recentTransactions = transactions?.slice(0, 10) || [];
 
     return NextResponse.json({
-      totalVisits,
-      todayVisits,
-      weekVisits,
-      totalPointsGiven,
-      uniqueCustomers: uniqueCount,
-      recentVisits,
+      todaySalesCount,
+      totalVol: totalVol.toFixed(2),
+      unclaimedLiability: unclaimedLiability.toFixed(2),
+      platformFee: "10.00",
+      recentTransactions,
+      agentContact
     });
   } catch (err) {
     console.error('Stats error:', err);

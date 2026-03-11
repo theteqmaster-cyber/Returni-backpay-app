@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import './globals.css';
 
 const SyncStatus = dynamic(() => import('@/components/SyncStatus').then(mod => mod.SyncStatus), {
@@ -43,9 +44,13 @@ export default function RootLayout({
                  WA
               </a>
             </div>
-            <p className="text-sm text-white/60">
+            <div className="flex gap-6 mb-4">
+              <Link href="/about" className="text-sm text-white/60 hover:text-white transition-colors font-medium">About Us</Link>
+              <a href="mailto:hello@returni.app" className="text-sm text-white/60 hover:text-white transition-colors font-medium">Contact</a>
+            </div>
+            <Link href="/admin/login" className="text-sm text-white/30 hover:text-white/50 transition-colors">
               &copy; 2026 RETURNi. All rights reserved.
-            </p>
+            </Link>
           </div>
         </footer>
 

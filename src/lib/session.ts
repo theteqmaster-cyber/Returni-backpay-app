@@ -16,7 +16,7 @@ export async function encrypt(payload: SessionPayload) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime('4h')
     .sign(encodedKey);
 }
 
@@ -32,7 +32,9 @@ export async function decrypt(session: string | undefined = '') {
 }
 
 export async function createSession(payload: Omit<SessionPayload, 'expiresAt'>) {
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  // 4-hour session: balances security (phone theft) against usability for business use
+  const SESSION_HOURS = 4;
+  const expiresAt = new Date(Date.now() + SESSION_HOURS * 60 * 60 * 1000);
   const session = await encrypt({ ...payload, expiresAt });
 
   cookies().set('returni_session', session, {
