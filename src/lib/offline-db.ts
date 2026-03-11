@@ -1,21 +1,31 @@
 import Dexie, { type Table } from 'dexie';
 
-export interface PendingVisit {
+export interface PendingTransaction {
   id?: number;
   merchantId: string;
-  customerPhone: string;
-  pointsEarned: number;
+  amount: string;
+  phone: string;
+  createdAt: string;
+  synced: boolean;
+}
+
+export interface PendingClaim {
+  id?: number;
+  merchantId: string;
+  token: string;
   createdAt: string;
   synced: boolean;
 }
 
 export class OfflineDB extends Dexie {
-  pendingVisits!: Table<PendingVisit, number>;
+  pendingTransactions!: Table<PendingTransaction, number>;
+  pendingClaims!: Table<PendingClaim, number>;
 
   constructor() {
-    super('ReturniOffline');
+    super('ReturniOfflineV2'); // new db name to clear out V1
     this.version(1).stores({
-      pendingVisits: '++id, merchantId, synced, createdAt',
+      pendingTransactions: '++id, merchantId, synced, createdAt',
+      pendingClaims: '++id, merchantId, synced, createdAt',
     });
   }
 }

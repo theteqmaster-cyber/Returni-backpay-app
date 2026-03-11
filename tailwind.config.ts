@@ -10,9 +10,12 @@ const config: Config = {
     extend: {
       colors: {
         returni: {
-          orange: "#E85D04",
-          dark: "#1A1A2E",
-          cream: "#F5F0E8",
+          green: "#2E7D32", // primary action green
+          darkGreen: "#1B5E20",
+          lightGreen: "#E8F5E9",
+          blue: "#1565C0", // secondary accent
+          dark: "#1A1A2E", // keeping dark text
+          bg: "#FAFAFA",   // overall white/off-white bg
         },
       },
     },

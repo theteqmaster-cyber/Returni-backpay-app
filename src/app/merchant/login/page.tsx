@@ -16,15 +16,22 @@ export default function MerchantLoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`/api/merchants?email=${encodeURIComponent(email)}`);
+      const res = await fetch(`/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Merchant not found');
+        throw new Error(data.error || 'Login failed');
       }
 
-      localStorage.setItem('returni_merchant_id', data.id);
-      localStorage.setItem('returni_merchant_name', data.business_name);
+      if (data.role !== 'merchant_user' && data.role !== 'admin') {
+         throw new Error('Not authorized as merchant');
+      }
+
+      localStorage.setItem('returni_merchant_id', data.merchant_id || '');
       router.push('/merchant/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
@@ -34,50 +41,54 @@ export default function MerchantLoginPage() {
   };
 
   return (
-    <main className="min-h-screen p-6 bg-returni-cream">
-      <Link href="/" className="text-returni-orange text-sm mb-6 inline-block">
-        ← Back
-      </Link>
-
-      <h1 className="text-2xl font-bold text-returni-dark mb-2">
-        Merchant Login
-      </h1>
-      <p className="text-returni-dark/70 mb-8">
-        Enter your email to access your dashboard
-      </p>
-
-      <form onSubmit={handleSubmit} className="max-w-md space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-returni-dark mb-1">
-            Email
-          </label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-returni-orange focus:border-transparent"
-            placeholder="you@example.com"
-          />
+    <main className="min-h-screen p-6 bg-returni-bg flex flex-col items-center justify-center">
+      <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+        <div className="mb-8">
+           <Link href="/" className="text-returni-green font-medium text-sm inline-flex items-center hover:text-returni-darkGreen transition-colors">
+             &larr; Back to Home
+           </Link>
         </div>
 
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        <h1 className="text-3xl font-bold text-returni-dark mb-2">
+          Merchant Login
+        </h1>
+        <p className="text-returni-dark/60 mb-8">
+          Enter your email to access your dashboard
+        </p>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-4 rounded-xl bg-returni-orange text-white font-semibold hover:bg-orange-600 disabled:opacity-50 transition"
-        >
-          {loading ? 'Logging in...' : 'Log In'}
-        </button>
-      </form>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-semibold text-returni-dark mb-2">
+              Email Address
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-returni-green focus:border-transparent outline-none transition-all"
+              placeholder="you@example.com"
+            />
+          </div>
 
-      <p className="mt-6 text-sm text-returni-dark/60">
-        New merchant?{' '}
-        <Link href="/merchant/setup" className="text-returni-orange underline">
-          Sign up
-        </Link>
-      </p>
+          {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-4 rounded-xl bg-returni-green text-white font-bold text-lg hover:bg-returni-darkGreen disabled:opacity-50 transition-colors shadow-md shadow-green-600/20 mt-4"
+          >
+            {loading ? 'Logging in...' : 'Log In'}
+          </button>
+        </form>
+
+        <p className="mt-8 text-center text-sm text-returni-dark/60 font-medium">
+          New merchant?{' '}
+          <Link href="/merchant/setup" className="text-returni-blue hover:text-blue-700 underline transition-colors">
+            Sign up
+          </Link>
+        </p>
+      </div>
     </main>
   );
 }

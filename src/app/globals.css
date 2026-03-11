@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --returni-orange: #E85D04;
+  --returni-green: #2E7D32;
   --returni-dark: #1A1A2E;
-  --returni-cream: #F5F0E8;
+  --returni-bg: #FAFAFA;
 }
 
 body {
-  background: var(--returni-cream);
+  background: var(--returni-bg);
   color: var(--returni-dark);
   min-height: 100vh;
 }

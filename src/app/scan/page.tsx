@@ -1,148 +1,77 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { db } from '@/lib/offline-db';
-
-const POINTS_PER_VISIT = 10;
+import { useRouter } from 'next/navigation';
+import { Scanner } from '@yudiel/react-qr-scanner';
 
 function ScanContent() {
-  const searchParams = useSearchParams();
-  const merchantIdParam = searchParams.get('merchantId');
-
+  const router = useRouter();
   const [merchantId, setMerchantId] = useState<string | null>(null);
-  const [phone, setPhone] = useState('');
+  const [manualToken, setManualToken] = useState('');
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [pendingCount, setPendingCount] = useState(0);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    const id =
-      merchantIdParam ||
-      (typeof window !== 'undefined' ? localStorage.getItem('returni_merchant_id') : null);
+    setIsMounted(true);
+    const id = localStorage.getItem('returni_merchant_id');
     setMerchantId(id);
+  }, []);
 
-    const loadPending = async () => {
-      if (db) {
-        const pending = await db.pendingVisits.where('synced').equals(0).count();
-        setPendingCount(pending);
-      }
-    };
-    loadPending();
-  }, [merchantIdParam]);
+  const processClaim = async (tokenString: string) => {
+    if (!merchantId) return;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!merchantId || !phone.trim()) return;
+    // Extract token from URL if it's a full URL, or use token directly
+    let finalToken = tokenString.trim();
+    if (finalToken.includes('/bp/')) {
+       finalToken = finalToken.split('/bp/')[1].split('?')[0];
+    }
 
-    setError('');
+    if (!finalToken) {
+       setError("Invalid token format.");
+       return;
+    }
+
     setLoading(true);
-
-    const phoneClean = phone.replace(/\D/g, '').slice(-9);
-    const fullPhone = phoneClean.length >= 9 ? (phoneClean.startsWith('0') ? phoneClean : `0${phoneClean}`) : phone.trim();
+    setError('');
+    setSuccessMsg('');
 
     try {
-      const res = await fetch('/api/visit', {
+      const res = await fetch('/api/claims', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          merchantId,
-          customerPhone: fullPhone,
-          pointsEarned: POINTS_PER_VISIT,
-        }),
+        body: JSON.stringify({ token: finalToken, merchantId })
       });
-
       const data = await res.json();
 
       if (!res.ok) {
-        if (res.status === 500 && navigator.onLine === false) {
-          await saveOffline();
-          return;
-        }
-        throw new Error(data.error || 'Failed to record visit');
+        throw new Error(data.error || 'Claim failed');
       }
 
-      setSuccess(true);
-      setPhone('');
-      setTimeout(() => setSuccess(false), 2000);
-    } catch (err) {
-      if (!navigator.onLine) {
-        await saveOffline();
-      } else {
-        setError(err instanceof Error ? err.message : 'Something went wrong');
-      }
+      setSuccessMsg(data.message);
+      setManualToken('');
+      
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const saveOffline = async () => {
-    if (!db || !merchantId) return;
-
-    const phoneClean = phone.replace(/\D/g, '').slice(-9);
-    const fullPhone = phoneClean.length >= 9 ? (phoneClean.startsWith('0') ? phoneClean : `0${phoneClean}`) : phone.trim();
-
-    await db.pendingVisits.add({
-      merchantId,
-      customerPhone: fullPhone,
-      pointsEarned: POINTS_PER_VISIT,
-      createdAt: new Date().toISOString(),
-      synced: false,
-    });
-
-    setPendingCount((c) => c + 1);
-    setSuccess(true);
-    setPhone('');
-    setError('');
-    setTimeout(() => setSuccess(false), 2000);
+  const handleManualSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    processClaim(manualToken);
   };
 
-  const syncPending = async () => {
-    if (!db || !merchantId) return;
-
-    const pending = await db.pendingVisits.where('synced').equals(0).toArray();
-    if (pending.length === 0) return;
-
-    try {
-      const res = await fetch('/api/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          merchantId,
-          pendingVisits: pending.map((p) => ({
-            id: p.id,
-            customerPhone: p.customerPhone,
-            pointsEarned: p.pointsEarned,
-          })),
-        }),
-      });
-
-      const data = await res.json();
-      if (data.syncedIds?.length) {
-        for (const id of data.syncedIds) {
-          await db.pendingVisits.update(id, { synced: true });
-        }
-        setPendingCount((c) => Math.max(0, c - data.syncedIds.length));
-      }
-    } catch {
-      setError('Sync failed. Will retry when online.');
-    }
-  };
-
-  useEffect(() => {
-    if (!merchantId || !navigator.onLine) return;
-    const onOnline = () => syncPending();
-    window.addEventListener('online', onOnline);
-    return () => window.removeEventListener('online', onOnline);
-  }, [merchantId]);
+  if (!isMounted) return null;
 
   if (!merchantId) {
     return (
-      <main className="min-h-screen p-6 bg-returni-cream flex flex-col items-center justify-center">
-        <p className="text-returni-dark mb-4">No merchant selected.</p>
-        <Link href="/merchant/login" className="text-returni-orange underline">
+      <main className="min-h-screen p-6 bg-returni-bg flex flex-col items-center justify-center">
+        <p className="text-returni-dark mb-4 text-lg font-medium">You must be logged in to claim points.</p>
+        <Link href="/merchant/login" className="text-returni-green font-bold text-lg hover:text-returni-darkGreen transition-colors underline">
           Log in as merchant
         </Link>
       </main>
@@ -150,70 +79,76 @@ function ScanContent() {
   }
 
   return (
-    <main className="min-h-screen p-6 bg-returni-cream">
-      <Link href="/" className="text-returni-orange text-sm mb-6 inline-block">
-        ← Back
-      </Link>
+    <main className="min-h-screen p-6 bg-returni-bg flex flex-col items-center">
+      <div className="w-full max-w-md">
+        <Link href="/merchant/dashboard" className="text-returni-green font-medium text-sm mb-6 inline-flex items-center hover:text-returni-darkGreen transition mt-4">
+          &larr; Back to Dashboard
+        </Link>
 
-      <h1 className="text-2xl font-bold text-returni-dark mb-2">
-        Add Points
-      </h1>
-      <p className="text-returni-dark/70 mb-8">
-        Enter your phone number to earn {POINTS_PER_VISIT} loyalty points
-      </p>
-
-      {pendingCount > 0 && (
-        <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex justify-between items-center">
-          <span className="text-amber-800 text-sm">
-            {pendingCount} visit(s) pending sync
-          </span>
-          <button
-            onClick={syncPending}
-            className="text-returni-orange text-sm font-medium"
-          >
-            Sync now
-          </button>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="max-w-md space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-returni-dark mb-1">
-            Phone Number
-          </label>
-          <input
-            type="tel"
-            required
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full px-4 py-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-returni-orange focus:border-transparent text-lg"
-            placeholder="0771234567"
-            autoFocus
-          />
-        </div>
-
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        {success && (
-          <p className="text-green-600 text-sm font-medium">
-            ✓ Points added{navigator.onLine ? '' : ' (will sync when online)'}
+        <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 mb-8">
+          <h1 className="text-3xl font-extrabold text-returni-dark mb-2 tracking-tight">
+            Scan Backpay QR
+          </h1>
+          <p className="text-returni-dark/60 mb-8 font-medium">
+            Scan a customer&apos;s backpay QR to redeem it.
           </p>
-        )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-4 rounded-xl bg-returni-orange text-white font-semibold text-lg hover:bg-orange-600 disabled:opacity-50 transition"
-        >
-          {loading ? 'Adding...' : `Add ${POINTS_PER_VISIT} Points`}
-        </button>
-      </form>
+          {error && (
+            <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 font-bold border border-red-200">
+              {error}
+            </div>
+          )}
 
-      <Link
-        href="/merchant/dashboard"
-        className="block mt-8 text-center text-returni-orange text-sm"
-      >
-        Merchant Dashboard
-      </Link>
+          {successMsg && (
+            <div className="bg-green-50 text-green-700 p-4 rounded-xl mb-6 font-bold border border-green-200 flex items-center gap-3 shadow-sm">
+               <svg className="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+               {successMsg}
+            </div>
+          )}
+
+          <div className="mb-8 overflow-hidden rounded-3xl shadow-lg border-4 border-returni-lightGreen bg-black">
+            <Scanner
+              onScan={(result) => {
+                 if (result && result.length > 0) {
+                   const text = result[0].rawValue;
+                   if (!loading && (!successMsg || (successMsg && Date.now() % 3000 < 500))) {
+                      processClaim(text);
+                   }
+                 }
+              }}
+              onError={(error: unknown) => {
+                if (error instanceof Error) console.error(error.message);
+              }}
+            />
+          </div>
+
+          <div className="relative mb-8 text-center">
+            <span className="relative z-10 px-4 bg-white text-returni-dark/40 text-sm font-bold tracking-wider">OR ENTER MANUAL TOKEN</span>
+            <div className="absolute left-0 top-1/2 w-full h-px bg-gray-200 -z-0"></div>
+          </div>
+
+          <form onSubmit={handleManualSubmit} className="space-y-4">
+            <div>
+              <input
+                type="text"
+                required
+                value={manualToken}
+                onChange={(e) => setManualToken(e.target.value)}
+                className="w-full px-4 py-4 rounded-2xl border-2 border-gray-200 focus:ring-4 focus:ring-returni-lightGreen focus:border-returni-green text-center font-mono text-lg font-bold outline-none transition-all"
+                placeholder="Paste Token/Link Here"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || !manualToken}
+              className="w-full py-4 rounded-2xl bg-returni-dark text-white font-extrabold text-lg hover:bg-black disabled:opacity-50 transition-all transform hover:-translate-y-0.5 shadow-lg shadow-gray-400/30"
+            >
+              {loading ? 'Redeeming...' : 'Manual Redeem'}
+            </button>
+          </form>
+        </div>
+      </div>
     </main>
   );
 }
@@ -221,8 +156,8 @@ function ScanContent() {
 export default function ScanPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen p-6 bg-returni-cream flex items-center justify-center">
-        <div className="animate-pulse">Loading...</div>
+      <main className="min-h-screen p-6 bg-returni-bg flex items-center justify-center">
+        <div className="animate-pulse text-returni-green font-bold text-xl">Loading...</div>
       </main>
     }>
       <ScanContent />
