@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     // Lookup unclaimed backpay record
     const { data: record, error: lookupError } = await supabase
       .from('backpay_records')
-      .select('id, status, backpay_amount, transaction_id, customer_id')
+      .select('id, status, backpay_amount, transaction_id, customer_id, currency')
       .eq('qr_token', token)
       .single();
 
@@ -41,14 +41,16 @@ export async function POST(request: NextRequest) {
       .insert({
         backpay_record_id: record.id,
         claimed_by_merchant_id: merchantId,
+        currency: record.currency || 'USD'
       });
 
     if (claimError) console.error('Failed to write claim audit record', claimError);
 
     return NextResponse.json({ 
       success: true, 
-      message: `Successfully claimed $${record.backpay_amount} return backpay.`,
-      amount_claimed: record.backpay_amount
+      message: `Successfully claimed ${record.currency === 'ZAR' ? 'ZAR ' : record.currency === 'ZIG' ? 'ZiG ' : '$'}${record.backpay_amount} return backpay.`,
+      amount_claimed: record.backpay_amount,
+      currency: record.currency
     });
 
   } catch (err) {

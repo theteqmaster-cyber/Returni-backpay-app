@@ -94,9 +94,13 @@ export default function AgentDashboardPage() {
 
       <p className="text-returni-dark/60 text-sm font-bold uppercase tracking-widest mb-6">Your Performance</p>
 
-      <div className="bg-white rounded-2xl p-8 shadow-md border border-gray-100 mb-8 border-l-8 border-l-returni-green flex flex-col justify-center">
+      <div className="bg-white rounded-2xl p-8 shadow-md border border-gray-100 mb-8 border-l-8 border-l-returni-green flex flex-col justify-center relative overflow-hidden">
          <p className="text-returni-dark/60 text-sm font-bold uppercase tracking-wider mb-2">Expected Payout</p>
-         <p className="text-5xl font-black text-returni-dark">${loading ? '...' : stats.pendingFees}</p>
+         <div className="flex flex-col gap-1">
+           <span className="text-5xl font-black text-returni-dark">${loading ? '...' : (stats.pendingFees as any)?.USD ?? '0.00'}</span>
+           <span className="text-xl font-bold text-returni-dark/70">ZAR {loading ? '...' : (stats.pendingFees as any)?.ZAR ?? '0.00'}</span>
+           <span className="text-xl font-bold text-returni-dark/70">ZiG {loading ? '...' : (stats.pendingFees as any)?.ZIG ?? '0.00'}</span>
+         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 mb-8">
@@ -106,7 +110,11 @@ export default function AgentDashboardPage() {
         </div>
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-center">
           <p className="text-returni-dark/60 text-sm font-bold mb-2">Total Merchant Vol</p>
-          <p className="text-3xl font-black text-returni-green">${loading ? '...' : (stats as any).totalVolumeProcessed || '0.00'}</p>
+          <div className="flex flex-col">
+            <span className="text-3xl font-black text-returni-green">${loading ? '...' : (stats as any).totalVolumeProcessed?.USD ?? '0.00'}</span>
+            <span className="text-sm font-semibold text-returni-green/80">ZAR {loading ? '...' : (stats as any).totalVolumeProcessed?.ZAR ?? '0.00'}</span>
+            <span className="text-sm font-semibold text-returni-green/80">ZiG {loading ? '...' : (stats as any).totalVolumeProcessed?.ZIG ?? '0.00'}</span>
+          </div>
         </div>
       </div>
 

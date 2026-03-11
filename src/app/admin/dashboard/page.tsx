@@ -63,17 +63,28 @@ export default function AdminDashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {[
-          { label: 'Total Merchants', value: stats.totalMerchants, color: 'text-returni-green', prefix: '' },
-          { label: 'Total Agents', value: stats.totalAgents, color: 'text-returni-blue', prefix: '' },
-          { label: 'Platform Revenue', value: stats.totalRevenue, color: 'text-returni-dark', prefix: '$' },
-          { label: 'Backpay Liability', value: stats.totalLiability, color: 'text-red-500', prefix: '$' },
-        ].map(card => (
-          <div key={card.label} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{card.label}</p>
-            <p className={`text-3xl font-black ${card.color}`}>{loading ? '...' : `${card.prefix}${card.value}`}</p>
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Total Merchants</p>
+          <p className={`text-3xl font-black text-returni-green`}>{loading ? '...' : stats.totalMerchants}</p>
+        </div>
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Total Agents</p>
+          <p className={`text-3xl font-black text-returni-blue`}>{loading ? '...' : stats.totalAgents}</p>
+        </div>
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-center">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Platform Revenue</p>
+          <p className="text-2xl font-black text-returni-dark">
+            {loading ? '...' : `$${stats.totalRevenue}`}
+          </p>
+        </div>
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-center">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Backpay Liability</p>
+          <div className="flex flex-col gap-1">
+             <span className="text-lg font-black text-red-500">{loading ? '...' : `$${(stats.totalLiability as any)?.USD ?? '0.00'}`}</span>
+             <span className="text-sm font-bold text-red-400">{loading ? '...' : `ZAR ${(stats.totalLiability as any)?.ZAR ?? '0.00'}`}</span>
+             <span className="text-sm font-bold text-red-400">{loading ? '...' : `ZiG ${(stats.totalLiability as any)?.ZIG ?? '0.00'}`}</span>
           </div>
-        ))}
+        </div>
       </div>
 
       {/* Revenue Chart */}

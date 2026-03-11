@@ -37,13 +37,20 @@ export async function GET(request: NextRequest) {
     // 3. Fetch ALL transactions for this merchant (no limit)
     const { data: transactions, error: txError } = await supabase
       .from('transactions')
-      .select('id, amount, currency, created_at')
+      .select('id, amount, currency, payment_method, merchant_notes, created_at')
       .eq('merchant_id', merchantId)
       .order('created_at', { ascending: false });
 
     if (txError) throw txError;
 
-    const totalVolume = transactions?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0;
+    const totalVolume = { USD: 0, ZAR: 0, ZIG: 0 };
+    transactions?.forEach(t => {
+      const cur = (t.currency || 'USD') as 'USD' | 'ZAR' | 'ZIG';
+      if (cur === 'USD' || cur === 'ZAR' || cur === 'ZIG') {
+        totalVolume[cur] += Number(t.amount || 0);
+      }
+    });
+    
     const totalCount = transactions?.length || 0;
 
     return NextResponse.json({
@@ -57,7 +64,11 @@ export async function GET(request: NextRequest) {
       transactions: transactions || [],
       summary: {
         totalCount,
-        totalVolume: totalVolume.toFixed(2),
+        totalVolume: {
+          USD: totalVolume.USD.toFixed(2),
+          ZAR: totalVolume.ZAR.toFixed(2),
+          ZIG: totalVolume.ZIG.toFixed(2)
+        },
         generatedAt: new Date().toISOString(),
       }
     });

@@ -12,10 +12,10 @@ interface ReportData {
     phone: string;
   };
   agent: { name: string; phone: string } | null;
-  transactions: { id: string; amount: string; currency: string; created_at: string }[];
+  transactions: { id: string; amount: string; currency: string; payment_method?: string; merchant_notes?: string; created_at: string }[];
   summary: {
     totalCount: number;
-    totalVolume: string;
+    totalVolume: { USD: string, ZAR: string, ZIG: string };
     generatedAt: string;
   };
 }
@@ -128,14 +128,22 @@ export default function MerchantPrintPage() {
         </div>
 
         {/* Summary Bar */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-returni-green/10 border border-returni-green/30 rounded-2xl p-5 text-center">
-            <p className="text-xs font-extrabold text-returni-green uppercase tracking-widest mb-1">Total Transactions</p>
-            <p className="text-4xl font-black text-returni-green">{data.summary.totalCount}</p>
+        <div className="grid grid-cols-4 gap-4 mb-8">
+          <div className="bg-returni-green/10 border border-returni-green/30 rounded-2xl p-5 text-center col-span-4 md:col-span-1">
+            <p className="text-[10px] font-extrabold text-returni-green uppercase tracking-widest mb-1">Total Tx</p>
+            <p className="text-3xl font-black text-returni-green">{data.summary.totalCount}</p>
           </div>
-          <div className="bg-returni-dark/5 border border-gray-200 rounded-2xl p-5 text-center">
-            <p className="text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-1">Total Volume</p>
-            <p className="text-4xl font-black text-returni-dark">${Number(data.summary.totalVolume).toLocaleString()}</p>
+          <div className="bg-returni-dark/5 border border-gray-200 rounded-2xl p-4 text-center">
+            <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mb-1">USD Volume</p>
+            <p className="text-xl font-black text-returni-dark">${Number(data.summary.totalVolume.USD).toLocaleString()}</p>
+          </div>
+          <div className="bg-returni-dark/5 border border-gray-200 rounded-2xl p-4 text-center">
+            <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mb-1">ZAR Volume</p>
+            <p className="text-xl font-black text-returni-dark">ZAR {Number(data.summary.totalVolume.ZAR).toLocaleString()}</p>
+          </div>
+          <div className="bg-returni-dark/5 border border-gray-200 rounded-2xl p-4 text-center">
+            <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mb-1">ZiG Volume</p>
+            <p className="text-xl font-black text-returni-dark">ZiG {Number(data.summary.totalVolume.ZIG).toLocaleString()}</p>
           </div>
         </div>
 
@@ -148,13 +156,15 @@ export default function MerchantPrintPage() {
                 <th className="text-left text-xs font-bold uppercase tracking-wider p-3 rounded-tl-lg">#</th>
                 <th className="text-left text-xs font-bold uppercase tracking-wider p-3">Date</th>
                 <th className="text-left text-xs font-bold uppercase tracking-wider p-3">Time</th>
+                <th className="text-center text-xs font-bold uppercase tracking-wider p-3">Method</th>
+                <th className="text-left text-xs font-bold uppercase tracking-wider p-3">Notes</th>
                 <th className="text-right text-xs font-bold uppercase tracking-wider p-3 rounded-tr-lg">Amount</th>
               </tr>
             </thead>
             <tbody>
               {data.transactions.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="text-center py-8 text-gray-400 font-medium italic text-sm">
+                  <td colSpan={6} className="text-center py-8 text-gray-400 font-medium italic text-sm">
                     No transactions recorded yet.
                   </td>
                 </tr>
@@ -170,8 +180,15 @@ export default function MerchantPrintPage() {
                       <td className="p-3 text-sm text-gray-500">
                         {d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </td>
-                      <td className="p-3 text-sm text-returni-green font-black text-right">
-                        ${Number(tx.amount).toFixed(2)}
+                      <td className="p-3 text-xs font-bold text-gray-400 uppercase text-center whitespace-nowrap">
+                         {tx.payment_method || 'CASH'}
+                      </td>
+                      <td className="p-3 text-xs text-gray-500 font-medium italic break-words max-w-[150px]">
+                         {tx.merchant_notes ? tx.merchant_notes : '-'}
+                      </td>
+                      <td className="p-3 text-sm text-returni-green font-black text-right whitespace-nowrap">
+                        {tx.currency === 'ZAR' ? 'ZAR ' : tx.currency === 'ZIG' ? 'ZiG ' : '$'}
+                        {Number(tx.amount).toFixed(2)}
                       </td>
                     </tr>
                   );
@@ -181,9 +198,21 @@ export default function MerchantPrintPage() {
             {data.transactions.length > 0 && (
               <tfoot>
                 <tr className="border-t-2 border-returni-dark">
-                  <td colSpan={3} className="p-3 text-sm font-extrabold text-returni-dark uppercase tracking-wider">TOTAL</td>
-                  <td className="p-3 text-lg font-black text-returni-green text-right">
-                    ${Number(data.summary.totalVolume).toLocaleString()}
+                  <td colSpan={5} className="p-3 text-sm font-extrabold text-returni-dark uppercase tracking-wider text-right">TOTAL USD</td>
+                  <td className="p-3 text-lg font-black text-returni-green text-right border-l border-gray-200">
+                    ${Number(data.summary.totalVolume.USD).toLocaleString()}
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan={5} className="px-3 pb-3 text-sm font-extrabold text-returni-dark uppercase tracking-wider text-right">TOTAL ZAR</td>
+                  <td className="px-3 pb-3 text-lg font-black text-returni-green text-right border-l border-gray-200">
+                    ZAR {Number(data.summary.totalVolume.ZAR).toLocaleString()}
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan={5} className="px-3 pb-3 text-sm font-extrabold text-returni-dark uppercase tracking-wider text-right">TOTAL ZIG</td>
+                  <td className="px-3 pb-3 text-lg font-black text-returni-green text-right border-l border-gray-200">
+                    ZiG {Number(data.summary.totalVolume.ZIG).toLocaleString()}
                   </td>
                 </tr>
               </tfoot>

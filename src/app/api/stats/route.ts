@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     // Transactions today & total
     const { data: transactions, error: txError } = await supabase
       .from('transactions')
-      .select('id, amount, created_at')
+      .select('id, amount, currency, payment_method, merchant_notes, created_at')
       .eq('merchant_id', merchantId)
       .order('created_at', { ascending: false });
 
@@ -56,25 +56,46 @@ export async function GET(request: NextRequest) {
     const todayTransactions = transactions?.filter(t => t.created_at.startsWith(today)) || [];
     const todaySalesCount = todayTransactions.length;
     
-    // Total Volume
-    const totalVol = transactions?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0;
+    // Total Volume grouped by currency
+    const totalVol = { USD: 0, ZAR: 0, ZIG: 0 };
+    transactions?.forEach(t => {
+      const cur = (t.currency || 'USD') as 'USD' | 'ZAR' | 'ZIG';
+      if (cur === 'USD' || cur === 'ZAR' || cur === 'ZIG') {
+        totalVol[cur] += Number(t.amount || 0);
+      }
+    });
 
-    // Unclaimed Liability
+    // Unclaimed Liability grouped by currency
     const { data: backpay, error: bpError } = await supabase
       .from('backpay_records')
-      .select('backpay_amount')
+      .select('backpay_amount, currency')
       .eq('merchant_id', merchantId)
       .eq('status', 'unclaimed');
       
     if (bpError) throw bpError;
 
-    const unclaimedLiability = backpay?.reduce((sum, b) => sum + Number(b.backpay_amount || 0), 0) || 0;
+    const unclaimedLiability = { USD: 0, ZAR: 0, ZIG: 0 };
+    backpay?.forEach(b => {
+      const cur = (b.currency || 'USD') as 'USD' | 'ZAR' | 'ZIG';
+      if (cur === 'USD' || cur === 'ZAR' || cur === 'ZIG') {
+        unclaimedLiability[cur] += Number(b.backpay_amount || 0);
+      }
+    });
+
     const recentTransactions = transactions?.slice(0, 10) || [];
 
     return NextResponse.json({
       todaySalesCount,
-      totalVol: totalVol.toFixed(2),
-      unclaimedLiability: unclaimedLiability.toFixed(2),
+      totalVol: {
+        USD: totalVol.USD.toFixed(2),
+        ZAR: totalVol.ZAR.toFixed(2),
+        ZIG: totalVol.ZIG.toFixed(2)
+      },
+      unclaimedLiability: {
+        USD: unclaimedLiability.USD.toFixed(2),
+        ZAR: unclaimedLiability.ZAR.toFixed(2),
+        ZIG: unclaimedLiability.ZIG.toFixed(2)
+      },
       platformFee: "10.00",
       recentTransactions,
       agentContact

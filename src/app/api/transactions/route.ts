@@ -7,7 +7,7 @@ function generateRandomToken() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { amount, phone, merchantId } = await request.json();
+    const { amount, phone, merchantId, currency = 'USD', payment_method = 'CASH', merchantNotes } = await request.json();
 
     if (!amount || !phone || !merchantId) {
        return NextResponse.json({ error: 'Missing amount, phone, or merchantId' }, { status: 400 });
@@ -57,7 +57,10 @@ export async function POST(request: NextRequest) {
        .insert({
           merchant_id: merchantId,
           customer_id: customerId,
-          amount: parseFloat(amount)
+          amount: parseFloat(amount),
+          currency,
+          payment_method,
+          merchant_notes: merchantNotes || null
        })
        .select('id')
        .single();
@@ -74,9 +77,10 @@ export async function POST(request: NextRequest) {
           customer_id: customerId,
           backpay_amount: backpayAmount,
           qr_token: qrToken,
-          status: 'unclaimed' // expires_at can be set to +30 days if desired
+          status: 'unclaimed', // expires_at can be set to +30 days if desired
+          currency
        })
-       .select('id, qr_token, backpay_amount')
+       .select('id, qr_token, backpay_amount, currency')
        .single();
 
     if (bpError) throw bpError;
@@ -84,7 +88,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
        success: true, 
        backpay_amount: backpay.backpay_amount, 
-       qr_token: backpay.qr_token 
+       qr_token: backpay.qr_token,
+       currency: backpay.currency
     });
 
   } catch (err) {

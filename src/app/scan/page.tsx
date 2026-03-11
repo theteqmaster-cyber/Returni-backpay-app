@@ -100,8 +100,8 @@ function ScanContent() {
           )}
 
           {successMsg && (
-            <div className="bg-green-50 text-green-700 p-4 rounded-xl mb-6 font-bold border border-green-200 flex items-center gap-3 shadow-sm">
-               <svg className="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+            <div className="bg-green-50 text-green-700 p-4 rounded-xl mb-6 font-bold border border-green-200 flex flex-col items-center gap-2 shadow-sm text-center">
+               <svg className="w-8 h-8 shrink-0 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
                {successMsg}
             </div>
           )}

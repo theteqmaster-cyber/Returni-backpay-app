@@ -64,9 +64,14 @@ export default function AdminTransactionsPage() {
       </form>
 
       {/* Total */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col md:flex-row items-center justify-between gap-2 border-b border-gray-100 pb-4">
         <p className="text-sm text-gray-400 font-medium">{loading ? '...' : `${transactions.length} transactions`}</p>
-        <p className="text-lg font-black text-returni-green">Total: ${Number(total).toLocaleString()}</p>
+        <div className="flex gap-4 items-center">
+            <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">Total Volumes:</span>
+            <span className="text-lg font-black text-returni-dark">${loading ? '0.00' : (total as any)?.USD ?? '0.00'}</span>
+            <span className="text-md font-bold text-returni-dark/70 bg-gray-100 px-3 py-1 rounded-md">ZAR {loading ? '0.00' : (total as any)?.ZAR ?? '0.00'}</span>
+            <span className="text-md font-bold text-returni-dark/70 bg-gray-100 px-3 py-1 rounded-md">ZiG {loading ? '0.00' : (total as any)?.ZIG ?? '0.00'}</span>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -81,6 +86,7 @@ export default function AdminTransactionsPage() {
                 <th className="text-left p-4">Merchant</th>
                 <th className="text-left p-4">Date</th>
                 <th className="text-left p-4">Time</th>
+                <th className="text-center p-4">Method</th>
                 <th className="text-right p-4">Amount</th>
               </tr>
             </thead>
@@ -92,7 +98,11 @@ export default function AdminTransactionsPage() {
                     <td className="p-4 text-sm font-semibold text-returni-dark">{(tx.merchant as any)?.business_name || '—'}</td>
                     <td className="p-4 text-sm text-returni-dark">{d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                     <td className="p-4 text-sm text-gray-500">{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                    <td className="p-4 text-sm font-black text-returni-green text-right">${Number(tx.amount).toFixed(2)}</td>
+                    <td className="p-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">{tx.payment_method || 'CASH'}</td>
+                    <td className="p-4 text-sm font-black text-returni-green text-right">
+                       {tx.currency === 'ZAR' ? 'ZAR ' : tx.currency === 'ZIG' ? 'ZiG ' : '$'}
+                       {Number(tx.amount).toFixed(2)}
+                    </td>
                   </tr>
                 );
               })}

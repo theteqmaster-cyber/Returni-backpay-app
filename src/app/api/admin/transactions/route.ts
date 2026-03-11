@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('transactions')
       .select(`
-        id, amount, currency, created_at,
+        id, amount, currency, payment_method, created_at,
         merchant:merchants!merchant_id(id, business_name)
       `)
       .order('created_at', { ascending: false })
@@ -26,9 +26,22 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
     if (error) throw error;
 
-    const total = (data || []).reduce((s, t) => s + Number(t.amount || 0), 0);
+    const total = { USD: 0, ZAR: 0, ZIG: 0 };
+    (data || []).forEach(t => {
+       const cur = (t.currency || 'USD') as 'USD' | 'ZAR' | 'ZIG';
+       if (cur === 'USD' || cur === 'ZAR' || cur === 'ZIG') {
+           total[cur] += Number(t.amount || 0);
+       }
+    });
 
-    return NextResponse.json({ transactions: data || [], total: total.toFixed(2) });
+    return NextResponse.json({ 
+      transactions: data || [], 
+      total: {
+         USD: total.USD.toFixed(2),
+         ZAR: total.ZAR.toFixed(2),
+         ZIG: total.ZIG.toFixed(2)
+      } 
+    });
   } catch (err: any) {
     console.error('Admin txns error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });

@@ -21,26 +21,39 @@ export async function GET(request: NextRequest) {
 
     // 2. Fetch total volume from agents merchants
     const merchantIds = merchants?.map(m => m.id) || [];
-    let totalVolume = 0;
+    const totalVolume = { USD: 0, ZAR: 0, ZIG: 0 };
 
     if (merchantIds.length > 0) {
       const { data: txs, error: txError } = await supabase
         .from('transactions')
-        .select('amount')
+        .select('amount, currency')
         .in('merchant_id', merchantIds);
 
       if (!txError && txs) {
-        totalVolume = txs.reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+        txs.forEach(tx => {
+          const cur = (tx.currency || 'USD') as 'USD' | 'ZAR' | 'ZIG';
+          if (cur === 'USD' || cur === 'ZAR' || cur === 'ZIG') {
+             totalVolume[cur] += Number(tx.amount || 0);
+          }
+        });
       }
     }
 
     // Example logic: Agent gets a 1% cut of the total volume their merchants process
-    const expectedPayout = (totalVolume * 0.01).toFixed(2);
+    const expectedPayout = {
+      USD: (totalVolume.USD * 0.01).toFixed(2),
+      ZAR: (totalVolume.ZAR * 0.01).toFixed(2),
+      ZIG: (totalVolume.ZIG * 0.01).toFixed(2)
+    };
 
     return NextResponse.json({
       activeMerchants: merchantIds.length,
       pendingFees: expectedPayout,
-      totalVolumeProcessed: totalVolume.toFixed(2),
+      totalVolumeProcessed: {
+        USD: totalVolume.USD.toFixed(2),
+        ZAR: totalVolume.ZAR.toFixed(2),
+        ZIG: totalVolume.ZIG.toFixed(2)
+      },
       merchants: merchants || []
     });
 

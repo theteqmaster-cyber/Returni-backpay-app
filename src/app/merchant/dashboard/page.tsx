@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { InstallPWAButton } from '@/components/InstallPWAButton';
+
 export default function MerchantDashboardPage() {
   const router = useRouter();
   const [userFullName, setUserFullName] = useState<string>('');
@@ -64,7 +66,10 @@ export default function MerchantDashboardPage() {
       <h1 className="text-3xl font-extrabold text-returni-dark mb-1 tracking-tight">
         Welcome, {userFullName || 'Merchant'}
       </h1>
-      <p className="text-returni-dark/60 text-sm mb-8 font-medium">Business Overview</p>
+      <p className="text-returni-dark/60 text-sm mb-6 font-medium">Business Overview</p>
+
+      {/* Manual App Install Button */}
+      <InstallPWAButton />
 
       <div className="flex gap-4 mb-4">
         <Link
@@ -94,9 +99,11 @@ export default function MerchantDashboardPage() {
           <p className="text-returni-dark/60 text-sm font-medium mb-1">Today&apos;s Sales</p>
           <p className="text-3xl font-bold text-returni-green">{loading ? '...' : stats.todaySalesCount}</p>
         </div>
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-center">
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-center gap-1">
           <p className="text-returni-dark/60 text-sm font-medium mb-1">Total Vol</p>
-          <p className="text-3xl font-bold text-returni-green">${loading ? '...' : stats.totalVol}</p>
+          <span className="text-2xl font-bold text-returni-green">{loading ? '...' : `$${(stats.totalVol as any)?.USD ?? '0.00'}`}</span>
+          <span className="text-sm font-semibold text-returni-green/80">{loading ? '...' : `ZAR ${(stats.totalVol as any)?.ZAR ?? '0.00'}`}</span>
+          <span className="text-sm font-semibold text-returni-green/80">{loading ? '...' : `ZiG ${(stats.totalVol as any)?.ZIG ?? '0.00'}`}</span>
         </div>
       </div>
 
@@ -104,9 +111,17 @@ export default function MerchantDashboardPage() {
         <div className="absolute left-0 top-0 bottom-0 w-2 bg-red-400"></div>
         <h2 className="font-semibold text-returni-dark mb-1 pl-2">Unclaimed Liability</h2>
         <p className="text-returni-dark/60 text-xs mb-3 pl-2">Total backpay owed to returning clients.</p>
-        <p className="text-4xl font-black text-returni-dark pl-2">
-          ${loading ? '...' : stats.unclaimedLiability}
-        </p>
+        <div className="pl-2 flex flex-col gap-1">
+          <span className="text-3xl font-black text-returni-dark">
+            ${loading ? '...' : (stats.unclaimedLiability as any)?.USD ?? '0.00'}
+          </span>
+          <span className="text-lg font-bold text-returni-dark/70">
+            ZAR {loading ? '...' : (stats.unclaimedLiability as any)?.ZAR ?? '0.00'}
+          </span>
+          <span className="text-lg font-bold text-returni-dark/70">
+            ZiG {loading ? '...' : (stats.unclaimedLiability as any)?.ZIG ?? '0.00'}
+          </span>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl p-5 shadow-md border border-gray-100 mb-8 relative overflow-hidden">
@@ -156,14 +171,25 @@ export default function MerchantDashboardPage() {
             <p className="text-returni-dark text-sm font-medium">No transactions yet.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+           <div className="space-y-3">
              {stats.recentTransactions.map((tx: any) => (
                 <div key={tx.id} className="flex justify-between items-center p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
                    <div className="flex flex-col">
-                      <span className="font-bold text-returni-dark">${Number(tx.amount).toFixed(2)}</span>
+                      <span className="font-bold text-returni-dark">
+                         {tx.currency === 'ZAR' ? 'ZAR ' : tx.currency === 'ZIG' ? 'ZiG ' : '$'}
+                         {Number(tx.amount).toFixed(2)}
+                      </span>
                       <span className="text-xs text-gray-400">{new Date(tx.created_at).toLocaleDateString()} {new Date(tx.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                      {tx.merchant_notes && (
+                         <span className="text-[10px] text-gray-500 font-medium mt-1 italic truncate max-w-[180px]">
+                            {tx.merchant_notes}
+                         </span>
+                      )}
                    </div>
-                   <span className="text-xs bg-green-50 text-returni-green font-bold px-2 py-1 rounded-md">Paid</span>
+                   <div className="flex flex-col items-end gap-1">
+                      <span className="text-xs bg-green-50 text-returni-green font-bold px-2 py-1 rounded-md">Paid</span>
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{tx.payment_method || 'CASH'}</span>
+                   </div>
                 </div>
              ))}
           </div>
