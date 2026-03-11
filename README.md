@@ -552,3 +552,308 @@ Get $0.50 cashback
 - **Offline-first** – Visits saved locally when offline, sync when online
 - **PWA** – Install on phone, works like an app
 
+what to build 
+
+### 0. Goal and constraints (what I’m optimizing for)
+
+- **Goal**: Turn the current MVP into a **pilot-ready RETURNi** that:
+  - Supports **merchants, agents, clients, admins** with different dashboards.
+  - Implements **transaction → backpay (4%) → QR link → WhatsApp → claim**.
+  - Fits your **Bulawayo pilot**: 10 agents, ~20 merchants, manual EcoCash cashflow.
+- **Constraints / choices**:
+  - Stay on **Next.js + Supabase + PWA**.
+  - **No WhatsApp Business API** – use **manual WhatsApp deep links**.
+  - Philosophically **online-first**, but app won’t completely break on short network glitches.
+  - Keep it **simple and understandable**, so you can explain it to your group and merchants.
+
+---
+
+### 1. Clean up and re-orient the current system
+
+**What I’ll do conceptually (no code yet):**
+
+- **Review current features**:
+  - Merchant setup/login
+  - Dashboard with “visits”
+  - Scan page with phone and offline queue
+- Decide what to **keep vs. repurpose**:
+  - Keep: PWA, Supabase client, basic dashboard UI, offline Dexie setup.
+  - Repurpose: “visits” → real **transactions + backpay**.
+  - Remove/ignore: anything that doesn’t fit the new money+backpay model.
+
+This gives a clean mental base: from “loyalty visits” to “money transactions + backpay”.
+
+---
+
+### 2. Redesign the data model around money + roles
+
+On Supabase I would **extend/adjust the schema** to match the new story:
+
+- **Users**
+  - `id, name, phone, email, role ('admin' | 'agent' | 'merchant_user' | 'client')`
+- **Merchants**
+  - `id, name, business_name, owner_user_id, agent_id, backpay_percent (default 4%)`
+- **Agents**
+  - `id, user_id`
+- **Clients**
+  - `id, phone` (and optional name)
+- **Transactions**
+  - `id, merchant_id, client_id, amount, currency, created_at`
+- **BackpayRecords**
+  - `id, transaction_id, merchant_id, client_id`
+  - `backpay_amount`
+  - `status ('unclaimed' | 'claimed' | 'expired')`
+  - `qr_token` (random, non-guessable)
+  - `expires_at`
+- **BackpayClaims**
+  - `id, backpay_record_id, claimed_at, claimed_by_merchant_id`
+- **AgentCommissions (optional now or later)**
+  - `id, agent_id, merchant_id, month, commission_amount, status ('pending' | 'paid')`
+
+**Plan:**
+- Migrate from simple `visits`/`points` to this model.
+- Keep the schema minimal but flexible enough for analytics and money flows.
+
+---
+
+### 3. Add proper auth and role-based dashboards
+
+I’ll turn the single-merchant experience into a **multi-role app**:
+
+- **Auth layer**
+  - Use Supabase auth (or similar) so each human has a `role`.
+- **Routing**
+  - `/merchant/...` – only `merchant_user`.
+  - `/agent/...` – only `agent`.
+  - `/admin/...` – only `admin`.
+  - Client web UI is optional now, likely minimal or via magic token link.
+
+- **Dashboards**
+  - **Merchant**:
+    - “New Transaction” (amount + client phone).
+    - “Scan to claim backpay”.
+    - Monthly summary.
+  - **Agent**:
+    - List of their merchants.
+    - For each: active/inactive, last activity, fee status.
+    - Total expected commission this month.
+  - **Admin**:
+    - All merchants.
+    - All agents.
+    - Revenue summary, commissions summary.
+
+**Plan:**
+- Introduce a simple **role-based layout** system (one nav per role).
+- Protect pages on the server so users don’t see routes outside their role.
+
+---
+
+### 4. Implement the core money flow: “New transaction → backpay → QR → WhatsApp”
+
+This is the heart of RETURNi.
+
+#### 4.1 New transaction (merchant side)
+
+When a client buys:
+
+1. Merchant opens **“New Transaction”** screen.
+2. Inputs:
+   - Amount
+   - Client phone (or scan client’s existing QR that encodes their ID/phone later).
+3. System:
+   - Looks up/creates the **client** by phone.
+   - Creates a **Transaction** record.
+   - Calculates **backpay_amount = amount × backpay_percent** (start with 4% fixed).
+   - Creates a **BackpayRecord** with status `unclaimed` and a unique `qr_token`.
+
+#### 4.2 Generate QR + WhatsApp link
+
+Using the `qr_token`:
+
+- Create a **link** like:
+  - `https://returni.app/bp/<token>`
+- Generate:
+  - A **QR code** for in-person scanning.
+  - A **WhatsApp deep link**:
+    - `https://wa.me/<client_phone>?text=<encoded message + link>`
+- Show to merchant:
+  - Button: **“Open WhatsApp to send QR”**.
+  - Merchant taps → WhatsApp opens with pre-filled message → merchant sends it.
+
+**Plan:**
+- Replace the existing “scan & add points” page with this **New Transaction** flow.
+- Keep the QR + link generation purely on our side, sending itself is manual (their WhatsApp).
+
+---
+
+### 5. Implement the claim flow: “Client returns with QR → merchant scans → backpay claimed”
+
+When client comes back:
+
+1. Client opens WhatsApp message → shows QR (or taps link).
+2. Merchant opens **“Scan Backpay”** screen (camera scanner).
+3. System:
+   - Reads token from QR or from URL.
+   - Looks up **BackpayRecord**.
+   - If `status = 'unclaimed'` and not expired:
+     - Marks as `claimed`.
+     - Creates a **BackpayClaim** record.
+4. Merchant decides how to apply:
+   - For now, we just record it (discount/cash is handled physically).
+5. Dashboard updates:
+   - Merchant sees total backpay given vs claimed.
+   - Client’s history shows that claim has been used (later, if we give them a view).
+
+**Plan:**
+- Refactor the current “scan” page to understand **backpay tokens**, not just phone numbers.
+- Keep the interface very simple: big camera preview, clear success/error states.
+
+---
+
+### 6. Money side: receipts for merchants, commissions for agents
+
+#### 6.1 Merchant monthly receipts
+
+At month end:
+
+- System computes per merchant:
+  - Number of transactions.
+  - Total amount processed.
+  - Total backpay granted (money they’ve promised to customers).
+  - Their **RETURNi fee = $5** for that month.
+
+Merchant UI:
+
+- “Billing” section:
+  - Shows this month’s fee and previous months (paid/unpaid).
+  - Button to **view/print/download** a simple receipt.
+
+Your process:
+
+- If not paid via EcoCash yet:
+  - Agent visits with that summary visible in the dashboard.
+  - Collects EcoCash/cash.
+  - You (or agent) mark “paid” in the system.
+
+#### 6.2 Agent commissions
+
+For each agent:
+
+- System knows:
+  - Which merchants they recruited (via `agent_id` on merchant).
+  - Which merchants have **paid** this month.
+
+Commission logic:
+
+- For each **paid merchant**:
+  - Commission = **$1.50** (30% of $5) – or whatever you decide.
+- Agent dashboard:
+  - Shows:
+    - “X merchants active this month”
+    - “Your expected payout: $Y”
+- At month-end:
+  - You confirm the numbers and pay via EcoCash.
+  - Mark their payout as `paid` for that month.
+
+**Plan:**
+- Add simple backend calculations (monthly aggregates) and present them in:
+  - Merchant “Billing” view.
+  - Agent “Earnings” view.
+  - Admin “Revenue & Commissions” view.
+
+---
+
+### 7. Online-first behavior and soft offline support
+
+To match your philosophy but keep merchants sane:
+
+- **Online requirements**:
+  - Login.
+  - Creating a new transaction (ideally).
+  - Claiming backpay (ideally).
+  - Viewing dashboards and billing.
+- **Soft offline fallback** (short outages only):
+  - If network blips for a moment:
+    - Queue the transaction (amount, phone, merchant).
+    - Mark locally: “Pending sync”.
+    - As soon as internet returns:
+      - Sync to server.
+      - Then generate WhatsApp link and show it.
+
+You can still tell merchants:
+- “This is an online system; you must have data.”  
+But the implementation won’t kill their business if Econet/Econet misbehaves for 30 seconds.
+
+**Plan:**
+- Reuse your existing IndexedDB/Dexie setup, but:
+  - Change the data it stores from “points visits” to “pending transactions/backpay creation”.
+  - Add clear UI indicators: “X operations pending sync”.
+
+---
+
+### 8. Admin oversight and safety
+
+For you (as founder/admin):
+
+- Simple **Admin dashboard**:
+  - Merchants list with:
+    - Status (active/inactive).
+    - Last activity.
+    - Fee status this month.
+  - Agents list with:
+    - Number of merchants.
+    - Expected commissions.
+  - High-level numbers:
+    - Total merchants.
+    - Total monthly fees.
+    - Total backpay liability (sum of unclaimed backpay).
+
+- Safety / control:
+  - Ability to:
+    - Deactivate a merchant (e.g., if they don’t pay or abuse the system).
+    - Adjust backpay percentage per merchant (later).
+
+**Plan:**
+- Use simple tables + filters first; no need for fancy charts in v1.
+
+---
+
+### 9. Rollout and testing plan (practical, for your neighborhood)
+
+Before touching more merchants:
+
+1. **You + 1–2 trusted merchants**:
+   - Run through full flows:
+     - New transaction
+     - Backpay generation
+     - WhatsApp send
+     - Client comes back, QR scanned, claim.
+   - Confirm:
+     - It’s not too slow on cheap Android phones.
+     - The UI text makes sense.
+
+2. **Train early agents with a script**:
+   - How to pitch to merchants.
+   - How to onboard.
+   - How to check the dashboard.
+   - How their commission shows.
+
+3. **Then invite the first ~10–20 merchants**:
+   - Give them the 2-week cancellation window.
+   - Make sure you’re reachable for support.
+
+---
+
+### In short – what I will build, in order
+
+1. **Reframe the current app** around transactions + backpay instead of points/visits.
+2. **Extend the database** for roles, transactions, backpay records, claims, and commissions.
+3. Add **role-based auth and dashboards** for merchant, agent, admin.
+4. Build the **New Transaction → backpay + WhatsApp link** flow.
+5. Build the **QR-based claim** flow on return visits.
+6. Implement **monthly receipts for merchants** and **commission summaries for agents**.
+7. Tune the **online-first + soft offline** behavior.
+8. Add a **simple admin panel** so you see the whole system.
+9. Test with a few real merchants and then roll it to your agents + 20-pilot plan.
+
+If this sequence matches your vision, we can then go step by step implementing it in your existing project.
