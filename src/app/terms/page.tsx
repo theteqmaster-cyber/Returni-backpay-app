@@ -26,7 +26,7 @@ export default function TermsPage() {
               Introduction
             </h2>
             <p className="text-gray-600 leading-relaxed">
-              Welcome to RETURNi. These Terms and Conditions govern your use of the RETURNi platform, which connects Merchants with Customers for the purpose of rewards ("Backpay"). By using our platform, you agree to these terms in full.
+              Welcome to RETURNi. These Terms and Conditions govern your use of the RETURNi platform, which connects Merchants with Customers for the purpose of rewards (&quot;Backpay&quot;). By using our platform, you agree to these terms in full.
             </p>
           </section>
 
@@ -36,7 +36,7 @@ export default function TermsPage() {
               Platform Role (RBZ Compliance)
             </h2>
             <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 italic text-gray-700">
-              RETURNi is a software-as-a-service (SaaS) provider. We do not hold funds, provide banking services, or act as a money transmitter. All "Backpay" values are merchant-funded and subject to the specific Merchant's ability to honor them.
+              RETURNi is a software-as-a-service (SaaS) provider. We do not hold funds, provide banking services, or act as a money transmitter. All &quot;Backpay&quot; values are merchant-funded and subject to the specific Merchant&apos;s ability to honor them.
             </div>
           </section>
 
