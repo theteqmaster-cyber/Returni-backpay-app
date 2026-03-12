@@ -10,42 +10,57 @@ export default function MerchantDashboardPage() {
   const router = useRouter();
   const [userFullName, setUserFullName] = useState<string>('');
   const [merchantName, setMerchantName] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    todaySalesCount: 0,
-    totalVol: "0.00",
-    unclaimedLiability: "0.00",
-    platformFee: "10.00",
-    recentTransactions: [] as any[]
-  });
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({
+      todaySalesCount: 0,
+      totalVol: { USD: "0.00", ZAR: "0.00", ZIG: "0.00" },
+      unclaimedLiability: { USD: "0.00", ZAR: "0.00", ZIG: "0.00" },
+      platformFee: "10.00",
+      recentTransactions: [] as any[]
+    });
+    const [error, setError] = useState<string>('');
 
-  useEffect(() => {
-    const id = localStorage.getItem('returni_merchant_id');
-    const name = localStorage.getItem('returni_user_name');
-    
-    if (!id) {
-       router.push('/merchant/login');
-       return;
-    }
-    
-    if (name) setUserFullName(name);
-    
-    fetch(`/api/stats?merchantId=${id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (!data.error) {
-          setStats(data);
-        }
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, [router]);
+    useEffect(() => {
+      const id = localStorage.getItem('returni_merchant_id');
+      const name = localStorage.getItem('returni_user_name');
+      
+      if (!id) {
+         router.push('/merchant/login');
+         return;
+      }
+      
+      if (name) setUserFullName(name);
+      
+      setLoading(true);
+      setError('');
+      fetch(`/api/stats?merchantId=${id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            setError(data.error);
+          } else {
+            setStats(data);
+          }
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error(err);
+          setError('Failed to connect to server');
+          setLoading(false);
+        });
+    }, [router]);
 
   return (
     <main className="min-h-screen p-6 bg-returni-bg max-w-lg mx-auto">
+      {error && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-xl shadow-sm animate-pulse">
+          <div className="flex items-center gap-3">
+            <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <p className="text-red-700 font-bold text-sm">{error}</p>
+          </div>
+          <p className="text-red-600/60 text-[10px] mt-1 font-medium ml-8">Please check if the new Supabase SQL functions were applied correctly.</p>
+        </div>
+      )}
       <div className="flex justify-between items-center mb-6">
         <Link href="/" className="text-returni-green font-medium text-sm inline-flex items-center hover:text-returni-darkGreen transition-colors">
           &larr; Home
@@ -193,6 +208,14 @@ export default function MerchantDashboardPage() {
                 </div>
              ))}
           </div>
+        )}
+        {stats.recentTransactions.length > 0 && (
+          <Link 
+            href="/merchant/print" 
+            className="block mt-4 text-center text-sm font-bold text-returni-blue hover:text-blue-700 transition-colors"
+          >
+            View All History & Reports &rarr;
+          </Link>
         )}
       </div>
     </main>

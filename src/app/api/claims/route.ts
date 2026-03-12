@@ -13,15 +13,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
     }
 
-    // Lookup unclaimed backpay record
+    // Lookup unclaimed backpay record (support both long token and short 5-char code)
     const { data: record, error: lookupError } = await supabase
       .from('backpay_records')
-      .select('id, status, backpay_amount, transaction_id, customer_id, currency')
-      .eq('qr_token', token)
+      .select('id, status, backpay_amount, transaction_id, customer_id, currency, expires_at')
+      .or(`qr_token.eq.${token},short_code.eq.${token}`)
       .single();
 
     if (lookupError || !record) {
-      return NextResponse.json({ error: 'Invalid or expired QR code' }, { status: 404 });
+      return NextResponse.json({ error: 'Invalid or expired QR code/Token' }, { status: 404 });
+    }
+
+    // Check for expiry
+    if (record.expires_at && new Date(record.expires_at) < new Date()) {
+       return NextResponse.json({ error: 'This backpay code has expired (7 day limit)' }, { status: 400 });
     }
 
     if (record.status !== 'unclaimed') {

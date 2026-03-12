@@ -188,13 +188,13 @@ export default function AboutPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="https://wa.me/263000000000"
+              href="https://wa.me/263780884195"
               className="flex items-center justify-center gap-3 bg-white text-returni-green font-black text-lg px-8 py-4 rounded-2xl hover:scale-105 transition-transform shadow-xl shadow-green-900/30"
             >
               <span className="text-2xl">💬</span> Chat on WhatsApp
             </a>
             <a
-              href="mailto:hello@returni.app"
+              href="mailto:theteqmaster@gmail.com"
               className="flex items-center justify-center gap-3 bg-white/20 border-2 border-white text-white font-bold text-lg px-8 py-4 rounded-2xl hover:bg-white/30 transition-colors"
             >
               <span className="text-2xl">✉️</span> Send an Email

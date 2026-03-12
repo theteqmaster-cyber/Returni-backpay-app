@@ -7,17 +7,45 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const merchantId = searchParams.get('merchantId');
+    const range = searchParams.get('range') || '7d'; // default to 7 days
 
     if (!merchantId) return NextResponse.json({ error: 'Missing merchantId' }, { status: 400 });
 
-    // 1. Fetch merchant details + owner + agent
-    const { data: merchant, error: mError } = await supabase
-      .from('merchants')
-      .select('id, name, business_name, email, phone, agent_id, owner:users!owner_user_id(full_name)')
-      .eq('id', merchantId)
-      .single();
+    // Calculate start date based on range
+    let startDate: Date | null = new Date();
+    if (range === '7d') startDate.setDate(startDate.getDate() - 7);
+    else if (range === '2w') startDate.setDate(startDate.getDate() - 14);
+    else if (range === '1m') startDate.setMonth(startDate.getMonth() - 1);
+    else startDate = null; // 'all'
+
+    const startDateIso = startDate ? startDate.toISOString() : '1970-01-01T00:00:00Z';
+
+    // 1. Fetch merchant details + transactions + volume in parallel
+    const [
+      { data: merchant, error: mError },
+      { data: volData, error: volError },
+      { data: transactions, count: totalCount, error: txError }
+    ] = await Promise.all([
+      supabase.from('merchants')
+        .select('id, name, business_name, email, phone, agent_id, owner:users!owner_user_id(full_name)')
+        .eq('id', merchantId)
+        .single(),
+      
+      supabase.rpc('get_merchant_volume_filtered', { 
+        merchant_uuid: merchantId, 
+        start_date: startDateIso 
+      }),
+
+      supabase.from('transactions')
+        .select('id, amount, currency, payment_method, merchant_notes, created_at', { count: 'exact' })
+        .eq('merchant_id', merchantId)
+        .gte('created_at', startDateIso)
+        .order('created_at', { ascending: false })
+    ]);
 
     if (mError) throw mError;
+    if (volError) throw volError;
+    if (txError) throw txError;
 
     // 2. Fetch agent contact if assigned
     let agentName = null;
@@ -34,24 +62,14 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 3. Fetch ALL transactions for this merchant (no limit)
-    const { data: transactions, error: txError } = await supabase
-      .from('transactions')
-      .select('id, amount, currency, payment_method, merchant_notes, created_at')
-      .eq('merchant_id', merchantId)
-      .order('created_at', { ascending: false });
-
-    if (txError) throw txError;
-
+    // 3. Process volume data
     const totalVolume = { USD: 0, ZAR: 0, ZIG: 0 };
-    transactions?.forEach(t => {
-      const cur = (t.currency || 'USD') as 'USD' | 'ZAR' | 'ZIG';
-      if (cur === 'USD' || cur === 'ZAR' || cur === 'ZIG') {
-        totalVolume[cur] += Number(t.amount || 0);
+    volData?.forEach((row: any) => {
+      const cur = (row.currency || 'USD') as 'USD' | 'ZAR' | 'ZIG';
+      if (totalVolume.hasOwnProperty(cur)) {
+        totalVolume[cur] = Number(row.total_amount || 0);
       }
     });
-    
-    const totalCount = transactions?.length || 0;
 
     return NextResponse.json({
       merchant: {
@@ -63,7 +81,7 @@ export async function GET(request: NextRequest) {
       agent: agentName ? { name: agentName, phone: agentPhone } : null,
       transactions: transactions || [],
       summary: {
-        totalCount,
+        totalCount: totalCount || 0,
         totalVolume: {
           USD: totalVolume.USD.toFixed(2),
           ZAR: totalVolume.ZAR.toFixed(2),

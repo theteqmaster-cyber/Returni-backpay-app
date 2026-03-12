@@ -23,6 +23,7 @@ interface ReportData {
 export default function MerchantPrintPage() {
   const router = useRouter();
   const [data, setData] = useState<ReportData | null>(null);
+  const [range, setRange] = useState('7d');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -33,14 +34,15 @@ export default function MerchantPrintPage() {
       return;
     }
 
-    fetch(`/api/merchant/report?merchantId=${merchantId}`)
+    setLoading(true);
+    fetch(`/api/merchant/report?merchantId=${merchantId}&range=${range}`)
       .then(res => res.json())
       .then(d => {
         if (d.error) { setError(d.error); } else { setData(d); }
         setLoading(false);
       })
       .catch(() => { setError('Failed to load report.'); setLoading(false); });
-  }, [router]);
+  }, [router, range]);
 
   const handlePrint = () => window.print();
 
@@ -68,6 +70,18 @@ export default function MerchantPrintPage() {
         >
           ← Back
         </button>
+        
+        <select
+          value={range}
+          onChange={(e) => setRange(e.target.value)}
+          className="px-4 py-2 rounded-xl border border-gray-300 bg-white text-returni-dark font-bold focus:ring-2 focus:ring-returni-green outline-none transition-all cursor-pointer"
+        >
+          <option value="7d">Last 7 Days</option>
+          <option value="2w">Last 2 Weeks</option>
+          <option value="1m">Last 1 Month</option>
+          <option value="all">All Time</option>
+        </select>
+
         <button
           onClick={handlePrint}
           className="px-8 py-2 rounded-xl bg-returni-green text-white font-bold shadow-md shadow-green-600/30 hover:bg-returni-darkGreen transition-colors"

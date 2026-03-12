@@ -16,7 +16,11 @@ export default function NewTransactionPage() {
   const [successData, setSuccessData] = useState<{
     backpay_amount: number;
     qr_token: string;
+    short_code: string;
     currency: string;
+    merchant_name: string;
+    amount: string;
+    merchantNotes: string;
   } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,6 +36,7 @@ export default function NewTransactionPage() {
     }
 
     try {
+      const notes = merchantNotes.trim() === '' ? null : merchantNotes.trim();
       const res = await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -41,7 +46,7 @@ export default function NewTransactionPage() {
           merchantId, 
           currency, 
           payment_method: paymentMethod,
-          merchantNotes: merchantNotes.trim() === '' ? null : merchantNotes.trim() 
+          merchantNotes: notes
         })
       });
       const data = await res.json();
@@ -51,7 +56,11 @@ export default function NewTransactionPage() {
       setSuccessData({
         backpay_amount: data.backpay_amount,
         qr_token: data.qr_token,
-        currency: data.currency || 'USD'
+        short_code: data.short_code,
+        currency: data.currency || 'USD',
+        merchant_name: data.merchant_name || 'the Merchant',
+        amount: amount,
+        merchantNotes: notes || 'your purchase'
       });
     } catch (err: any) {
       setError(err.message);
@@ -69,7 +78,7 @@ export default function NewTransactionPage() {
   if (successData) {
      const claimUrl = `${window.location.origin}/bp/${successData.qr_token}`;
      const sym = getCurrencySymbol(successData.currency);
-     const whatsappText = `Hi! Thanks for visiting. Here is your RETURNi cashback claim link for ${sym}${successData.backpay_amount}: ${claimUrl}`;
+     const whatsappText = `Thank you for shopping at ${successData.merchant_name}! Here is your receipt for ${successData.merchantNotes}. Cost: ${sym}${successData.amount}. Your RETURNi backpay is ${sym}${successData.backpay_amount}. Claim it here: ${claimUrl}`;
      const whatsappLink = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(whatsappText)}`;
 
       return (
@@ -79,10 +88,16 @@ export default function NewTransactionPage() {
              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
            </div>
            <h2 className="text-2xl font-black text-returni-dark mb-1 tracking-tight">Sale Recorded</h2>
-           <p className="text-returni-green font-bold text-lg mb-6 bg-green-50 py-2 rounded-xl border border-green-100 inline-block px-4">Generated {sym}{successData.backpay_amount} backpay</p>
+           <p className="text-returni-green font-bold text-lg mb-4 bg-green-50 py-2 rounded-xl border border-green-100 inline-block px-4">Generated {sym}{successData.backpay_amount} backpay</p>
            
-           <div className="bg-white flex justify-center p-6 rounded-3xl mb-6 border-2 border-gray-100 shadow-sm mx-auto max-w-[200px]">
-             <QRCodeSVG value={claimUrl} size={150} />
+           <div className="bg-white flex justify-center p-6 rounded-3xl mb-4 border-2 border-gray-100 shadow-sm mx-auto max-w-[180px]">
+             <QRCodeSVG value={claimUrl} size={140} />
+           </div>
+
+           <div className="mb-6 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Manual Code</p>
+             <p className="text-3xl font-mono font-black text-returni-dark tracking-tighter">{successData.short_code}</p>
+             <p className="text-[10px] text-gray-400 mt-1 font-bold">EXPIRES IN 7 DAYS</p>
            </div>
 
            <a 
@@ -91,7 +106,7 @@ export default function NewTransactionPage() {
              rel="noopener noreferrer"
              className="block w-full py-4 rounded-2xl bg-[#25D366] text-white font-bold mb-4 hover:bg-[#128C7E] transition-colors shadow-lg shadow-green-500/20"
            >
-             Send via WhatsApp
+             Send Receipt via WhatsApp
            </a>
 
            <button

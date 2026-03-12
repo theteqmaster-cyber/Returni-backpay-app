@@ -36,17 +36,21 @@ export default function RootLayout({
         {/* Global Footer */}
         <footer className="bg-returni-dark text-white py-8 mt-auto">
           <div className="max-w-4xl mx-auto px-6 flex flex-col items-center">
-            <div className="flex gap-4 mb-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-returni-blue transition-colors text-sm font-bold">
-                 FB
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-returni-green transition-colors text-sm font-bold">
-                 WA
-              </a>
+            <div className="flex flex-col items-center gap-2 mb-4">
+              <div className="flex gap-4">
+                <a href="https://wa.me/263780884195" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-returni-green transition-colors text-sm font-bold">
+                   WA1
+                </a>
+                <a href="https://wa.me/263788532354" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-returni-green transition-colors text-sm font-bold">
+                   WA2
+                </a>
+              </div>
+              <p className="text-[10px] text-white/40 font-mono">+263 78 088 4195 | +263 78 853 2354</p>
             </div>
             <div className="flex gap-6 mb-4">
               <Link href="/about" className="text-sm text-white/60 hover:text-white transition-colors font-medium">About Us</Link>
-              <a href="mailto:hello@returni.app" className="text-sm text-white/60 hover:text-white transition-colors font-medium">Contact</a>
+              <Link href="/terms" className="text-sm text-white/60 hover:text-white transition-colors font-medium">Terms & Privacy</Link>
+              <a href="mailto:theteqmaster@gmail.com" className="text-sm text-white/60 hover:text-white transition-colors font-medium">Contact</a>
             </div>
             <Link href="/admin/login" className="text-sm text-white/30 hover:text-white/50 transition-colors">
               &copy; 2026 RETURNi. All rights reserved.
