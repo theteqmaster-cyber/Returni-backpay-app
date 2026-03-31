@@ -70,7 +70,7 @@ export default function AdminTicketsPage() {
                      </div>
                      <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 mb-4">
                         <p className="text-sm font-medium text-slate-700 leading-relaxed italic">
-                          "{t.problem_description}"
+                          &quot;{t.problem_description}&quot;
                         </p>
                      </div>
                      <div className="flex items-center gap-4">

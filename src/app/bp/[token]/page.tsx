@@ -98,11 +98,11 @@ export default function BackpayTokenPage({ params }: { params: { token: string }
           <div className="flex flex-col gap-4 px-6 pb-8">
              {promoImages!.map((img, idx) => (
                 <div key={idx} className="w-full aspect-[16/10] rounded-[2rem] overflow-hidden bg-gray-50 shadow-lg border border-gray-100">
-                   <img 
+                   <Image 
                       src={img} 
                       alt={`Promo ${idx + 1}`} 
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                      onError={(e) => { (e.target as HTMLImageElement).src = '/logo.jpg'; }}
+                      fill
+                      className="object-cover hover:scale-105 transition-transform duration-700"
                    />
                 </div>
              ))}

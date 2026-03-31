@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { InstallPWAButton } from '@/components/InstallPWAButton';
 import PulseGraph from '@/components/PulseGraph';
 
@@ -348,7 +349,7 @@ export default function MerchantDashboardPage() {
                     <div className={`w-full h-full rounded-2xl border-2 border-dashed flex flex-col items-center justify-center transition-all overflow-hidden bg-gray-50/50 ${img ? 'border-returni-green' : 'border-gray-200 hover:border-returni-green hover:bg-green-50/30'}`}>
                       {img ? (
                         <div className="relative w-full h-full">
-                          <img src={img} className="w-full h-full object-cover" alt="Preview" />
+                          <Image src={img} fill className="object-cover" alt="Preview" />
                           <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center transition-opacity">
                              <span className="text-[10px] text-white font-black uppercase tracking-widest">Change</span>
                           </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -16,7 +16,7 @@ export default function BranchTransactionsPage() {
   const [page, setPage] = useState(0);
   const [error, setError] = useState('');
 
-  const fetchBranchData = async (pageNum: number, isInitial = false) => {
+  const fetchBranchData = useCallback(async (pageNum: number, isInitial = false) => {
     try {
       if (isInitial) setLoading(true);
       else setLoadingMore(true);
@@ -39,11 +39,11 @@ export default function BranchTransactionsPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, [merchantId]);
 
   useEffect(() => {
     if (merchantId) fetchBranchData(0, true);
-  }, [merchantId]);
+  }, [merchantId, fetchBranchData]);
 
   if (loading) return (
     <main className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
