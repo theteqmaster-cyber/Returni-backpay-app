@@ -220,7 +220,7 @@ export default function MerchantDetailPage() {
 
               <div className="mt-8 pt-8 border-t border-gray-100">
                  <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest leading-relaxed">
-                   Changes to portfolio assignment will reflect instantly on the Trader's dashboard.
+                   Changes to portfolio assignment will reflect instantly on the Trader&apos;s dashboard.
                  </p>
               </div>
            </div>

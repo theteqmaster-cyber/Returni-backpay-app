@@ -208,7 +208,7 @@ export default function TraderDashboardPage() {
         <div className="mt-8 pt-8 border-t border-slate-50 flex justify-between items-center">
            <div>
               <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">Star Performance</p>
-              <p className="text-sm font-black text-slate-900">{topBranch?.business_name || 'Calculating...'}</p>
+              <p className="text-sm font-black text-slate-900">{topBranch?.business_name || 'Calculating&hellip;'}</p>
            </div>
            <div className="text-right">
               <span className="text-xs font-black text-returni-green">🥇 Leaderboard Rank #1</span>
@@ -310,7 +310,7 @@ export default function TraderDashboardPage() {
                 </div>
               </div>
             </Link>
-          )
+          );
         })}
       </div>
 

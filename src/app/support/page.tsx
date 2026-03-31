@@ -104,7 +104,7 @@ export default function SupportPage() {
                       value={formData.description} 
                       onChange={e => setFormData({...formData, description: e.target.value})}
                       className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-returni-dark outline-none font-bold text-sm transition-all resize-none"
-                      placeholder="Tell us what's happening..."
+                      placeholder="Tell us what&apos;s happening..."
                     />
                  </div>
 
