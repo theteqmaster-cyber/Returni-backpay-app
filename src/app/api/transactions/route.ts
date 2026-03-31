@@ -17,7 +17,7 @@ function generateShortCode() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { amount, phone, merchantId, currency = 'USD', payment_method = 'CASH', merchantNotes } = await request.json();
+    const { amount, phone, merchantId, currency = 'USD', payment_method = 'CASH', merchantNotes, manual_backpay_amount } = await request.json();
 
     if (!amount || !phone || !merchantId) {
        return NextResponse.json({ error: 'Missing amount, phone, or merchantId' }, { status: 400 });
@@ -48,9 +48,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Fetch merchant backpay percentage (default 4.00) and name
+    // 2. Fetch merchant backpay percentage (default 4.00), name, and promotions
     const { data: merchant, error: merchantError } = await supabase
        .from('merchants')
-       .select('backpay_percent, business_name')
+       .select('backpay_percent, business_name, promo_text')
        .eq('id', merchantId)
        .single();
 
@@ -58,8 +59,21 @@ export async function POST(request: NextRequest) {
        return NextResponse.json({ error: 'Merchant not found' }, { status: 404 });
     }
 
-    const backpayPercent = parseFloat(merchant.backpay_percent?.toString() || '4.00');
-    const backpayAmount = (parseFloat(amount) * (backpayPercent / 100)).toFixed(2);
+    const backpayPercent = parseFloat(merchant.backpay_percent?.toString() || '0.00') || 0.00;
+    let backpayAmount = (parseFloat(amount || '0') * (backpayPercent / 100)).toFixed(2);
+    
+    // Override with manual amount if provided
+    if (manual_backpay_amount !== undefined && manual_backpay_amount !== null && manual_backpay_amount !== '') {
+       const manualParsed = parseFloat(manual_backpay_amount);
+       if (!isNaN(manualParsed)) {
+          backpayAmount = manualParsed.toFixed(2);
+       }
+    }
+    
+    // Final NaN safeguard
+    if (isNaN(parseFloat(backpayAmount))) {
+       backpayAmount = "0.00";
+    }
 
     // 3. Create transaction record
     const { data: transaction, error: txError } = await supabase
@@ -107,7 +121,8 @@ export async function POST(request: NextRequest) {
        qr_token: backpay.qr_token,
        short_code: backpay.short_code,
        currency: backpay.currency,
-       merchant_name: merchant.business_name
+       merchant_name: merchant.business_name,
+       promo_text: merchant.promo_text || ''
     });
 
   } catch (err) {

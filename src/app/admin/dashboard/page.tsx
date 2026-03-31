@@ -34,12 +34,14 @@ export default function AdminDashboardPage() {
 
   const navTiles = [
     { href: '/admin/merchants', label: 'Manage Merchants', icon: '🏪', desc: 'Add & view all merchants', color: 'bg-returni-green' },
+    { href: '/admin/traders', label: 'Manage Traders', icon: '💼', desc: 'Manage branch portfolios', color: 'bg-returni-dark' },
     { href: '/admin/agents', label: 'Manage Agents', icon: '👤', desc: 'Add & view all agents', color: 'bg-returni-blue' },
     { href: '/admin/agents/performance', label: 'Agent Leaderboard', icon: '🏆', desc: 'Ranked by sales volume', color: 'bg-yellow-500' },
     { href: '/admin/transactions', label: 'Transaction Log', icon: '📋', desc: 'All platform transactions', color: 'bg-purple-500' },
     { href: '/admin/backpay', label: 'Backpay Liability', icon: '⚠️', desc: 'Unclaimed backpay by merchant', color: 'bg-red-500' },
     { href: '/admin/fees', label: 'Platform Fees', icon: '💳', desc: 'Monthly fee payment status', color: 'bg-orange-500' },
     { href: '/admin/commissions', label: 'Agent Commissions', icon: '💰', desc: 'Review & mark payouts', color: 'bg-emerald-600' },
+    { href: '/admin/tickets', label: 'Support Tickets', icon: '🎫', desc: 'User reported problems', color: 'bg-rose-600' },
     { href: '/admin/audit-log', label: 'Audit Log', icon: '🔍', desc: 'Admin action history', color: 'bg-gray-600' },
   ];
 

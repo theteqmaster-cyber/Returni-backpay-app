@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
-// Simple page that loads when the deep link /bp/TOKEN is clicked
-// Customers see their code.
+// Redesigned Receipt Page: Prioritizes Merchant Promotions
 export default function BackpayTokenPage({ params }: { params: { token: string } }) {
   const [details, setDetails] = useState<{
     merchant_name: string;
@@ -16,6 +16,8 @@ export default function BackpayTokenPage({ params }: { params: { token: string }
     status: string;
     expires_at: string;
     short_code: string;
+    promo_text?: string;
+    promo_images?: string[];
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -45,7 +47,8 @@ export default function BackpayTokenPage({ params }: { params: { token: string }
   if (loading) {
     return (
       <main className="min-h-screen p-6 bg-returni-bg flex flex-col items-center justify-center">
-        <div className="animate-pulse text-returni-green font-bold text-xl">Loading your receipt...</div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-returni-green mb-4"></div>
+        <div className="text-returni-green font-bold text-xl animate-pulse">Loading your rewards...</div>
       </main>
     );
   }
@@ -64,87 +67,85 @@ export default function BackpayTokenPage({ params }: { params: { token: string }
   const sym = getCurrencySymbol(details.currency);
   const isExpired = details.expires_at && new Date(details.expires_at) < new Date();
   const isClaimed = details.status === 'claimed';
+  const hasImages = details.promo_images && details.promo_images.length > 0;
+  const promoImages = hasImages ? details.promo_images : ['/logo.jpg'];
 
   return (
-    <main className="min-h-screen p-6 bg-[#f8fafc] flex flex-col items-center pt-8 pb-16">
-      <div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 max-w-sm w-full overflow-hidden flex flex-col">
-        
-        {/* Receipt Header */}
-        <div className="bg-returni-dark p-8 text-center text-white relative">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-white/20 rounded-full mt-2"></div>
-          <h1 className="text-xl font-black tracking-tight mb-1 uppercase">{details.merchant_name}</h1>
-          <p className="text-white/60 text-xs font-bold tracking-widest uppercase">E-Receipt</p>
-          
-          <div className="mt-6">
-            <p className="text-white/50 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Total Paid</p>
-            <p className="text-4xl font-black tracking-tighter">{sym}{details.amount}</p>
-          </div>
-        </div>
-
-        {/* Receipt Body */}
-        <div className="p-8 space-y-8 relative">
-          {/* Decorative semi-circles for receipt look */}
-          <div className="absolute -top-3 left-0 w-full flex justify-between px-4">
-            {[...Array(10)].map((_, i) => (
-              <div key={i} className="w-4 h-4 bg-white rounded-full"></div>
-            ))}
+    <main className="min-h-screen bg-[#F8FAFC] pb-24">
+      {/* Top Section: Promotion + Merchant Header */}
+      <div className="bg-white shadow-sm border-b border-gray-100">
+        <div className="max-w-md mx-auto">
+          {/* Brand Header */}
+          <div className="pt-8 pb-4 px-6 text-center">
+             <h2 className="text-returni-green text-[10px] font-black uppercase tracking-[0.3em] mb-1">Your Store</h2>
+             <h1 className="text-2xl font-black text-returni-dark tracking-tight uppercase leading-tight">{details.merchant_name}</h1>
           </div>
 
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Date</p>
-              <p className="text-sm font-bold text-returni-dark">{new Date(details.date).toLocaleDateString()} {new Date(details.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+          {/* Interesting Bolder Promotion Message - NOW ABOVE PHOTOS */}
+          {details.promo_text && (
+            <div className="px-8 pt-4 pb-8 text-center">
+              <div className="relative inline-block">
+                <span className="absolute -top-6 -left-6 text-7xl text-returni-green/10 font-serif">“</span>
+                <p className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-returni-dark via-returni-green to-returni-dark leading-tight tracking-tighter italic px-4 relative z-10">
+                  {details.promo_text}
+                </p>
+                <span className="absolute -bottom-10 -right-6 text-7xl text-returni-green/10 font-serif">”</span>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Status</p>
-              <p className={`text-xs font-black uppercase px-3 py-1 rounded-full border ${isClaimed ? 'bg-green-50 text-green-600 border-green-100' : isExpired ? 'bg-red-50 text-red-600 border-red-100' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>
-                {isClaimed ? 'Claimed' : isExpired ? 'Expired' : 'Active'}
-              </p>
-            </div>
-          </div>
+          )}
 
-          <div>
-             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Purchase Details</p>
-             <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-               <p className="text-sm font-medium text-returni-dark leading-relaxed italic">
-                 &ldquo;{details.notes || 'General Purchase'}&rdquo;
-               </p>
-             </div>
+          {/* Promotion Gallery - Vertical List for 'Marketing Strategy' */}
+          <div className="flex flex-col gap-4 px-6 pb-8">
+             {promoImages!.map((img, idx) => (
+                <div key={idx} className="w-full aspect-[16/10] rounded-[2rem] overflow-hidden bg-gray-50 shadow-lg border border-gray-100">
+                   <img 
+                      src={img} 
+                      alt={`Promo ${idx + 1}`} 
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/logo.jpg'; }}
+                   />
+                </div>
+             ))}
           </div>
-
-          <div className="pt-6 border-t border-dashed border-gray-200">
-            <div className="bg-green-50 p-6 rounded-[2rem] border border-green-100 text-center relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-24 h-24 bg-returni-green/5 rounded-full -mr-8 -mt-8"></div>
-               <p className="text-[10px] font-black text-returni-green uppercase tracking-[0.2em] mb-2">Backpay Earned</p>
-               <p className="text-4xl font-black text-returni-dark tracking-tighter">{sym}{details.backpay_amount}</p>
-               <p className="text-[10px] text-returni-green/60 font-bold mt-2">Added to your RETURNi balance</p>
-            </div>
-          </div>
-
-          <div className="text-center pt-2">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Redemption Code</p>
-            <div className="inline-block bg-white border-2 border-returni-dark p-4 px-8 rounded-2xl shadow-sm">
-              <p className="text-4xl font-mono font-black text-returni-dark tracking-widest">{details.short_code}</p>
-            </div>
-            <p className="text-[9px] text-gray-400 mt-3 font-bold uppercase tracking-widest">
-              {isExpired ? 'Code has expired' : `Valid until ${new Date(details.expires_at).toLocaleDateString()}`}
-            </p>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="bg-gray-50 p-6 text-center border-t border-gray-100">
-           <p className="text-[10px] text-gray-400 font-bold leading-tight">
-             Show this receipt or code to the merchant to redeem your backpay.
-           </p>
         </div>
       </div>
 
-      <div className="mt-8 text-center">
-         <Link href="/scan" className="inline-flex items-center gap-2 bg-returni-dark text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-black transition shadow-xl shadow-gray-400/20 uppercase tracking-widest">
-           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
-           Merchant Login
-         </Link>
+      <div className="max-w-md mx-auto px-6 mt-8 relative z-20">
+        {/* Backpay & Code Card - The main action container */}
+        <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl shadow-blue-900/5 text-center border border-gray-100 mb-6">
+           <div className="w-16 h-16 bg-green-50 text-returni-green rounded-2xl flex items-center justify-center mx-auto mb-6 rotate-3">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+           </div>
+           
+           <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mb-2">Backpay Reward</p>
+           <div className="flex justify-center items-baseline gap-1 mb-8">
+              <span className="text-returni-green font-black text-3xl">{sym}</span>
+              <span className="text-6xl font-black tracking-tighter text-returni-dark">{details.backpay_amount}</span>
+           </div>
+
+           <div className="bg-gray-50 rounded-3xl p-6 border border-gray-100 mb-6">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Redemption Code</p>
+              <p className="text-5xl font-mono font-black tracking-[0.2em] text-returni-dark">{details.short_code}</p>
+           </div>
+
+           <div className={`text-[10px] font-bold uppercase px-4 py-2 rounded-xl inline-block ${isClaimed ? 'bg-green-50 text-green-600' : isExpired ? 'bg-red-50 text-red-600' : 'bg-returni-green/10 text-returni-green border border-returni-green/20'}`}>
+             {isClaimed ? '✓ Claimed' : isExpired ? '× Expired' : 'Ready to use at store'}
+           </div>
+        </div>
+
+        {/* Mini Receipt Summary */}
+        <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-100 flex items-center justify-between">
+           <div>
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Receipt Summary</p>
+              <div className="flex items-center gap-2">
+                 <p className="text-sm font-black text-returni-dark">{sym}{details.amount}</p>
+                 <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                 <p className="text-[11px] font-bold text-gray-500">{new Date(details.date).toLocaleDateString()}</p>
+              </div>
+              {details.notes && <p className="text-[10px] text-gray-400 font-medium italic mt-1 truncate max-w-[150px]">&quot;{details.notes}&quot;</p>}
+           </div>
+           <Image src="/logo.jpg" alt="Returni" width={32} height={32} className="rounded-lg opacity-30 grayscale" />
+        </div>
       </div>
     </main>
   );

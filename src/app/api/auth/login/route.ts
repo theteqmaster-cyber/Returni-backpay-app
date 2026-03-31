@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
     // Role-specific lookups to store ID in session
     let merchantId = undefined;
     let agentId = undefined;
+    let traderId = undefined;
 
     if (user.role === 'merchant_user') {
       const { data: merchant } = await supabase
@@ -50,6 +51,13 @@ export async function POST(request: NextRequest) {
         .eq('user_id', user.id)
         .single();
       if (agent) agentId = agent.id;
+    } else if (user.role === 'trader') {
+      const { data: trader } = await supabase
+        .from('traders')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+      if (trader) traderId = trader.id;
     }
 
     // Create secure session
@@ -58,6 +66,7 @@ export async function POST(request: NextRequest) {
       role: user.role,
       merchant_id: merchantId,
       agent_id: agentId,
+      trader_id: traderId,
     });
 
     return NextResponse.json({
@@ -65,7 +74,8 @@ export async function POST(request: NextRequest) {
       role: user.role,
       full_name: user.full_name,
       merchant_id: merchantId,
-      agent_id: agentId
+      agent_id: agentId,
+      trader_id: traderId
     });
   } catch (err) {
     console.error('Login error:', err);

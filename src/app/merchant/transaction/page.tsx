@@ -6,12 +6,13 @@ import { QRCodeSVG } from 'qrcode.react';
 
 export default function NewTransactionPage() {
   const [amount, setAmount] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('+2637');
   const [currency, setCurrency] = useState<'USD' | 'ZAR' | 'ZIG'>('USD');
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'ECOCASH' | 'SWIPE'>('CASH');
   const [merchantNotes, setMerchantNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [manualBackpay, setManualBackpay] = useState('');
   
   const [successData, setSuccessData] = useState<{
     backpay_amount: number;
@@ -21,6 +22,7 @@ export default function NewTransactionPage() {
     merchant_name: string;
     amount: string;
     merchantNotes: string;
+    promo_text?: string;
   } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,7 +48,8 @@ export default function NewTransactionPage() {
           merchantId, 
           currency, 
           payment_method: paymentMethod,
-          merchantNotes: notes
+          merchantNotes: notes,
+          manual_backpay_amount: manualBackpay || null
         })
       });
       const data = await res.json();
@@ -60,7 +63,8 @@ export default function NewTransactionPage() {
         currency: data.currency || 'USD',
         merchant_name: data.merchant_name || 'the Merchant',
         amount: amount,
-        merchantNotes: notes || 'your purchase'
+        merchantNotes: notes || 'your purchase',
+        promo_text: data.promo_text || ''
       });
     } catch (err: any) {
       setError(err.message);
@@ -78,7 +82,8 @@ export default function NewTransactionPage() {
   if (successData) {
      const claimUrl = `${window.location.origin}/bp/${successData.qr_token}`;
      const sym = getCurrencySymbol(successData.currency);
-     const whatsappText = `Thank you for shopping at ${successData.merchant_name}! Here is your receipt for ${successData.merchantNotes}. Cost: ${sym}${successData.amount}. Your RETURNi backpay is ${sym}${successData.backpay_amount}. Claim it here: ${claimUrl}`;
+     const promoPart = successData.promo_text ? `\n\nPromotions: ${successData.promo_text}` : '';
+     const whatsappText = `Thank you for shopping at ${successData.merchant_name}! Here is your receipt for ${successData.merchantNotes}.\nTotal: ${sym}${successData.amount}\nYour reward: ${sym}${successData.backpay_amount}\n\nClaim it here: ${claimUrl}${promoPart}`;
      const whatsappLink = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(whatsappText)}`;
 
       return (
@@ -140,7 +145,7 @@ export default function NewTransactionPage() {
             New Sale
           </h1>
           <p className="text-returni-dark/60 mb-8 font-medium">
-            Record a purchase to automatically generate 4% customer backpay.
+            Record a purchase to generate customer backpay (default 0%).
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -204,6 +209,24 @@ export default function NewTransactionPage() {
                   placeholder="0.00"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-returni-dark mb-2">
+                Custom Backpay Amount <span className="text-gray-400 font-normal">(Optional)</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xl">{getCurrencySymbol(currency)}</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={manualBackpay}
+                  onChange={(e) => setManualBackpay(e.target.value)}
+                  className={`w-full ${currency === 'ZIG' ? 'pl-16' : currency === 'ZAR' ? 'pl-16' : 'pl-10'} pr-4 py-4 text-2xl rounded-2xl border-2 border-dashed border-gray-200 focus:ring-4 focus:ring-returni-lightGreen focus:border-returni-green font-black text-returni-green outline-none transition-all placeholder:text-gray-200`}
+                  placeholder="0.00"
+                />
+              </div>
+              <p className="text-[10px] text-gray-400 mt-2 font-medium">Leave blank to use your default 0% backpay rate.</p>
             </div>
 
             <div>

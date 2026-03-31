@@ -6,9 +6,10 @@ const encodedKey = new TextEncoder().encode(secretKey);
 
 export type SessionPayload = {
   id: string;
-  role: 'admin' | 'agent' | 'merchant_user' | 'client';
+  role: 'admin' | 'agent' | 'merchant_user' | 'trader' | 'client';
   merchant_id?: string;
   agent_id?: string;
+  trader_id?: string;
   expiresAt: Date;
 };
 

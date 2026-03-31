@@ -110,8 +110,14 @@ export default function HomePage() {
               Merchant Login
             </Link>
             <Link
+              href="/trader/login"
+              className="block w-full py-4 px-6 rounded-2xl bg-returni-dark text-white font-bold text-lg shadow-lg hover:bg-black transition-all transform hover:-translate-y-1 hover:shadow-xl"
+            >
+              Trader Portal (Multi-Branch)
+            </Link>
+            <Link
               href="/scan"
-              className="block w-full py-4 px-6 rounded-2xl border-2 border-returni-dark text-returni-dark font-bold text-center hover:bg-returni-dark hover:text-white transition-all transform hover:-translate-y-0.5"
+              className="block w-full py-4 px-6 rounded-2xl border-2 border-returni-dark text-returni-dark font-bold text-center hover:bg-gray-100 transition-all transform hover:-translate-y-0.5"
             >
               Redeem QR Code
             </Link>
@@ -125,11 +131,9 @@ export default function HomePage() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-returni-dark/40 animate-bounce">
-          <span className="text-xs font-medium uppercase tracking-widest">Scroll</span>
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-          </svg>
+        <div className="absolute bottom-12 left-0 right-0 flex flex-col items-center justify-center gap-3 text-returni-dark/30 pointer-events-none">
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] translate-x-[0.2em]">Scroll</span>
+          <div className="w-px h-12 bg-gradient-to-b from-returni-green to-transparent animate-bounce"></div>
         </div>
       </section>
 

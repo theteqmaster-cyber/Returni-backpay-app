@@ -29,8 +29,8 @@ export async function GET(request: NextRequest) {
       { data: liabilityData, error: liabilityError },
       { data: recentTransactions, error: txError }
     ] = await Promise.all([
-      // 1. Merchant details (agent_id)
-      supabase.from('merchants').select('agent_id').eq('id', merchantId).single(),
+      // 1. Merchant details (agent_id, promotions)
+      supabase.from('merchants').select('agent_id, promo_text, promo_images').eq('id', merchantId).single(),
       
       // 2. Today's sales count (Database-side count)
       supabase.from('transactions')
@@ -104,6 +104,30 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    // 6. Daily Sales Counts (Last 6 Days)
+    const sixDaysAgo = new Date();
+    sixDaysAgo.setDate(sixDaysAgo.getDate() - 5);
+    sixDaysAgo.setHours(0,0,0,0);
+
+    const { data: dailyCounts, error: dailyError } = await supabase
+       .from('transactions')
+       .select('created_at')
+       .eq('merchant_id', merchantId)
+       .gte('created_at', sixDaysAgo.toISOString())
+       .order('created_at', { ascending: true });
+
+    const dailySalesArr = [];
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    for (let i = 0; i < 6; i++) {
+       const d = new Date();
+       d.setDate(d.getDate() - (5 - i));
+       const dayName = days[d.getDay()];
+       const dateStr = d.toISOString().split('T')[0];
+       
+       const count = dailyCounts?.filter(tx => tx.created_at.startsWith(dateStr)).length || 0;
+       dailySalesArr.push({ day: dayName, count });
+    }
+
     return NextResponse.json({
       todaySalesCount: todaySalesCount || 0,
       totalVol: {
@@ -118,7 +142,12 @@ export async function GET(request: NextRequest) {
       },
       platformFee: "10.00",
       recentTransactions: recentTransactions || [],
-      agentContact
+      dailySales: dailySalesArr,
+      agentContact,
+      merchant: {
+        promo_text: merchantData?.promo_text,
+        promo_images: merchantData?.promo_images
+      }
     });
   } catch (err) {
     console.error('Stats error:', err);

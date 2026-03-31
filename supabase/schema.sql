@@ -8,7 +8,9 @@ CREATE TABLE IF NOT EXISTS merchants (
   email TEXT UNIQUE NOT NULL,
   phone TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  promo_text TEXT,
+  promo_images JSONB DEFAULT '[]'
 );
 
 -- Core application users (admins, agents, merchant users, clients)
@@ -17,22 +19,30 @@ CREATE TABLE IF NOT EXISTS users (
   full_name TEXT,
   email TEXT UNIQUE,
   phone TEXT,
-  role TEXT NOT NULL CHECK (role IN ('admin', 'agent', 'merchant_user', 'client')),
+  role TEXT NOT NULL CHECK (role IN ('admin', 'agent', 'merchant_user', 'trader', 'client')),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Agents (linked to users)
+-- Agents (linked to users - oversee merchants)
 CREATE TABLE IF NOT EXISTS agents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Link merchants to their owning user and agent
+-- Traders (Multi-branch owners - own merchants)
+CREATE TABLE IF NOT EXISTS traders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Link merchants to their owning user, agent, or trader
 ALTER TABLE merchants
 ADD COLUMN IF NOT EXISTS owner_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
 ADD COLUMN IF NOT EXISTS agent_id UUID REFERENCES agents(id) ON DELETE SET NULL,
-ADD COLUMN IF NOT EXISTS backpay_percent NUMERIC(5,2) DEFAULT 4.00;
+ADD COLUMN IF NOT EXISTS trader_id UUID REFERENCES traders(id) ON DELETE SET NULL,
+ADD COLUMN IF NOT EXISTS backpay_percent NUMERIC(5,2) DEFAULT 0.00;
 
 -- Customers (identified by phone)
 CREATE TABLE IF NOT EXISTS customers (
@@ -149,3 +159,18 @@ CREATE POLICY "Allow all transactions" ON transactions FOR ALL USING (true) WITH
 CREATE POLICY "Allow all backpay_records" ON backpay_records FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all backpay_claims" ON backpay_claims FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all agent_commissions" ON agent_commissions FOR ALL USING (true) WITH CHECK (true);
+
+-- SUPPORT TICKETS
+-- Simple storage for problems reported by merchants and traders.
+CREATE TABLE IF NOT EXISTS support_tickets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  problem_description TEXT NOT NULL,
+  user_role TEXT NOT NULL, -- 'merchant' or 'trader'
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE support_tickets ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can submit support tickets" ON support_tickets FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admins can view support tickets" ON support_tickets FOR SELECT USING (true);

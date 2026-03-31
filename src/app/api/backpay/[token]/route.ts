@@ -27,7 +27,9 @@ export async function GET(
           amount,
           merchant_notes,
           merchants (
-            business_name
+            business_name,
+            promo_text,
+            promo_images
           )
         )
       `)
@@ -50,7 +52,9 @@ export async function GET(
       backpay_amount: backpay.backpay_amount,
       status: backpay.status,
       expires_at: backpay.expires_at,
-      short_code: backpay.short_code
+      short_code: backpay.short_code,
+      promo_text: merchant?.promo_text,
+      promo_images: merchant?.promo_images
     });
 
   } catch (err: any) {
