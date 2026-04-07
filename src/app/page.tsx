@@ -2,193 +2,203 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function HomePage() {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [scrollY, setScrollY] = useState(0);
-  const heroRef = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState({ features: false, stats: false });
+  const [brickboards, setBrickboards] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 
   useEffect(() => {
-    const handleMouse = (e: MouseEvent) => {
-      setMousePos({
-        x: (e.clientX / window.innerWidth - 0.5) * 20,
-        y: (e.clientY / window.innerHeight - 0.5) * 20,
-      });
-    };
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('mousemove', handleMouse);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('mousemove', handleMouse);
-      window.removeEventListener('scroll', handleScroll);
-    };
+    // Load favorites from localStorage
+    const saved = localStorage.getItem('favorite_merchants');
+    if (saved) setFavoriteIds(JSON.parse(saved));
+
+    fetchBrickboards();
   }, []);
 
-  // Scroll reveal
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(e => {
-          if (e.isIntersecting) {
-            setVisible(v => ({ ...v, [e.target.getAttribute('data-section') || '']: true }));
-          }
-        });
-      },
-      { threshold: 0.2 }
-    );
-    document.querySelectorAll('[data-section]').forEach(el => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
+  const fetchBrickboards = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/demo/brickboard');
+      const data = await res.json();
+      if (data.success) {
+        setBrickboards(data.brickboards || []);
+      }
+    } catch (err) {
+      console.error('Error fetching brickboards:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleFavorite = (id: string) => {
+    const newFavs = favoriteIds.includes(id) 
+      ? favoriteIds.filter(pid => pid !== id)
+      : [...favoriteIds, id];
+    
+    setFavoriteIds(newFavs);
+    localStorage.setItem('favorite_merchants', JSON.stringify(newFavs));
+  };
+
+  // Filter and Sort: Favorites first, then by search
+  const filteredBoards = brickboards
+    .filter(b => {
+      if (!searchQuery) return true;
+      const busName = b.demo_merchants?.business_name?.toLowerCase() || '';
+      const promo = b.promo_text?.toLowerCase() || '';
+      const query = searchQuery.toLowerCase();
+      return busName.includes(query) || promo.includes(query);
+    })
+    .sort((a, b) => {
+      const aFav = favoriteIds.includes(a.merchant_id) ? 1 : 0;
+      const bFav = favoriteIds.includes(b.merchant_id) ? 1 : 0;
+      return bFav - aFav;
+    });
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-gradient-to-b from-returni-bg via-green-50/30 to-returni-bg">
-      {/* Hero Section */}
-      <section
-        ref={heroRef}
-        className="relative min-h-screen flex flex-col items-center justify-center p-6 overflow-hidden"
-      >
-        {/* Animated background orbs */}
-        <div
-          className="absolute w-96 h-96 rounded-full bg-returni-green/10 blur-3xl pointer-events-none transition-transform duration-700 ease-out"
-          style={{ transform: `translate(${mousePos.x * 1.5}px, ${mousePos.y * 1.5}px) translate(-50%, -50%)`, top: '30%', left: '60%' }}
-        />
-        <div
-          className="absolute w-64 h-64 rounded-full bg-returni-blue/10 blur-3xl pointer-events-none transition-transform duration-700 ease-out"
-          style={{ transform: `translate(${mousePos.x * -1}px, ${mousePos.y * -1}px) translate(-50%, -50%)`, top: '60%', left: '30%' }}
-        />
+    <main className="min-h-screen bg-slate-950 text-white font-sans selection:bg-blue-500/30">
+      {/* Decorative Orbs */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+      
+      {/* Top Navbar */}
+      <nav className="p-6 flex justify-between items-center max-w-7xl mx-auto sticky top-0 bg-slate-950/80 backdrop-blur-xl z-50 border-b border-white/5">
+        <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-black italic text-white shadow-lg shadow-blue-600/20">R</div>
+            <span className="font-black tracking-tighter text-xl italic uppercase">Returni <span className="text-blue-500">Discovery</span></span>
+        </div>
+        <div className="flex gap-4">
+            <Link href="/demo-merchant/login" className="px-5 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all">
+                Merchant Portal
+            </Link>
+            <Link href="/merchant/login" className="hidden md:block px-5 py-2.5 bg-white text-slate-950 rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-xl shadow-white/5">
+                Standard Login
+            </Link>
+        </div>
+      </nav>
 
-        {/* Floating dots */}
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-returni-green/20 pointer-events-none"
-            style={{
-              width: `${8 + i * 4}px`,
-              height: `${8 + i * 4}px`,
-              top: `${15 + i * 12}%`,
-              left: `${10 + i * 14}%`,
-              transform: `translate(${mousePos.x * (0.3 + i * 0.1)}px, ${mousePos.y * (0.3 + i * 0.1)}px)`,
-              transition: `transform ${0.4 + i * 0.1}s ease-out`,
-              animation: `float ${3 + i}s ease-in-out infinite alternate`,
-            }}
-          />
-        ))}
+      {/* Hero / Search Hub */}
+      <header className="py-20 px-6 max-w-4xl mx-auto text-center space-y-8">
+          <div>
+              <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter mb-4 leading-none">
+                The <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Brickboard</span>
+              </h1>
+              <p className="text-slate-500 font-bold text-xs uppercase tracking-[0.3em]">Live promotional cards from your local nodes</p>
+          </div>
 
-        {/* Logo with parallax */}
-        <div
-          className="relative z-10 text-center max-w-md w-full"
-          style={{ transform: `translateY(${scrollY * 0.15}px)` }}
-        >
-          <div className="flex justify-center mb-8">
-            <div className="relative">
-              <div className="absolute inset-0 rounded-3xl bg-returni-green/30 blur-xl scale-110 animate-pulse" />
-              <Image
-                src="/logo.jpg"
-                alt="RETURNi Logo"
-                width={160}
-                height={160}
-                className="relative rounded-3xl shadow-2xl border-4 border-white object-cover aspect-square hover:scale-105 transition-transform duration-500"
-                priority
+          <div className="relative group">
+              <input 
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search merchants or specific offers..."
+                className="w-full bg-slate-900/50 border border-white/10 px-8 py-6 rounded-[2.5rem] text-lg font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all placeholder:text-slate-700 shadow-2xl"
               />
-            </div>
-          </div>
-
-          <h1 className="text-5xl font-black text-returni-dark mb-4 tracking-tight">
-            RETURN<span className="text-returni-green">i</span>
-          </h1>
-          <p className="text-returni-dark/70 mb-10 text-xl font-medium leading-relaxed">
-            The simple customer retention platform<br />for local businesses.
-          </p>
-
-          <div className="space-y-4">
-            <Link
-              href="/merchant/login"
-              className="block w-full py-4 px-6 rounded-2xl bg-returni-green text-white font-bold text-lg shadow-lg shadow-green-600/30 hover:bg-returni-darkGreen transition-all transform hover:-translate-y-1 hover:shadow-xl hover:shadow-green-600/40"
-            >
-              Merchant Login
-            </Link>
-            <Link
-              href="/trader/login"
-              className="block w-full py-4 px-6 rounded-2xl bg-returni-dark text-white font-bold text-lg shadow-lg hover:bg-black transition-all transform hover:-translate-y-1 hover:shadow-xl"
-            >
-              Trader Portal (Multi-Branch)
-            </Link>
-            <Link
-              href="/scan"
-              className="block w-full py-4 px-6 rounded-2xl border-2 border-returni-dark text-returni-dark font-bold text-center hover:bg-gray-100 transition-all transform hover:-translate-y-0.5"
-            >
-              Redeem QR Code
-            </Link>
-            <Link
-              href="/about"
-              className="block w-full py-3 text-returni-green font-semibold text-center hover:text-returni-darkGreen transition-colors text-sm"
-            >
-              Learn about RETURNi →
-            </Link>
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-12 left-0 right-0 flex flex-col items-center justify-center gap-3 text-returni-dark/30 pointer-events-none">
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] translate-x-[0.2em]">Scroll</span>
-          <div className="w-px h-12 bg-gradient-to-b from-returni-green to-transparent animate-bounce"></div>
-        </div>
-      </section>
-
-      {/* Feature Cards — scroll reveal */}
-      <section
-        data-section="features"
-        className={`py-20 px-6 transition-all duration-700 ${visible.features ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-      >
-        <div className="max-w-4xl mx-auto">
-          <p className="text-center text-xs font-bold text-returni-green uppercase tracking-widest mb-3">How it works</p>
-          <h2 className="text-3xl font-black text-returni-dark text-center mb-12 tracking-tight">Built for real businesses</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { icon: '🛒', title: 'Record Sales', desc: 'Merchant logs a sale. Customer gets a QR code with their backpay amount instantly.' },
-              { icon: '📱', title: 'Customer Redeems', desc: 'Customer scans their QR at their next visit. No app download. No account needed.' },
-              { icon: '📊', title: 'You Grow', desc: 'Track which customers return, how much they spend, and your loyalty liability in real-time.' },
-            ].map((f, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-2 transition-all duration-300 group"
-                style={{ transitionDelay: `${i * 100}ms` }}
-              >
-                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">{f.icon}</div>
-                <h3 className="font-extrabold text-returni-dark text-xl mb-2">{f.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-blue-600 rounded-3xl shadow-lg shadow-blue-600/20">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
               </div>
-            ))}
           </div>
-        </div>
+      </header>
+
+      {/* Discovery Feed */}
+      <section className="max-w-7xl mx-auto px-6 pb-40">
+          {loading ? (
+              <div className="flex justify-center py-20">
+                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+          ) : filteredBoards.length === 0 ? (
+              <div className="text-center py-40 bg-slate-900/20 rounded-[3rem] border border-dashed border-white/5">
+                  <p className="text-slate-600 font-black uppercase tracking-widest text-xs">No discovery cards found in this sector</p>
+              </div>
+          ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {filteredBoards.map((board) => (
+                      <div 
+                        key={board.merchant_id}
+                        className={`bg-white rounded-[2.5rem] shadow-2xl overflow-hidden group transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 border border-slate-100 flex flex-col mx-auto text-slate-950 relative w-full ${favoriteIds.includes(board.merchant_id) ? 'ring-4 ring-blue-500/20 shadow-blue-500/10' : ''} ${!board.id ? 'grayscale opacity-70 bg-slate-50' : ''}`}
+                      >
+                         {/* Collage Header (Stitched Look) */}
+                         <div className="relative aspect-square bg-slate-50 flex overflow-hidden p-2 gap-1.5">
+                            {/* Main Large Slot */}
+                            <div className="flex-[1.5] rounded-[1.2rem] overflow-hidden bg-slate-100 border border-slate-200">
+                                {board.image_url_1 ? (
+                                    <img src={board.image_url_1} className="w-full h-full object-cover" alt="promo" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center opacity-20"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                                )}
+                            </div>
+                            {/* Side Slots Stack */}
+                            <div className="flex-1 flex flex-col gap-1.5">
+                                <div className="flex-1 rounded-[1rem] overflow-hidden bg-slate-100 border border-slate-200">
+                                    {board.image_url_2 ? (
+                                        <img src={board.image_url_2} className="w-full h-full object-cover" alt="promo" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center opacity-20"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg></div>
+                                    )}
+                                </div>
+                                <div className="flex-1 rounded-[1rem] overflow-hidden bg-slate-100 border border-slate-200">
+                                    {board.image_url_3 ? (
+                                        <img src={board.image_url_3} className="w-full h-full object-cover" alt="promo" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center opacity-20"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg></div>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            {/* Favorite Heart Button */}
+                            <button 
+                                onClick={() => toggleFavorite(board.merchant_id)}
+                                className={`absolute top-4 right-4 w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-xl backdrop-blur-md active:scale-95 ${favoriteIds.includes(board.merchant_id) ? 'bg-red-500 text-white' : 'bg-white/90 text-slate-300 hover:text-red-400'}`}
+                            >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"></path></svg>
+                            </button>
+                         </div>
+
+                         {/* Content Body */}
+                         <div className="px-6 pb-8 pt-3 space-y-3">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h4 className="text-xl font-black italic tracking-tighter leading-none text-slate-950 uppercase line-clamp-1">{board.demo_merchants?.business_name}</h4>
+                                    <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest mt-1">
+                                        {!board.id ? 'Not Live' : 'Verified Node'}
+                                    </p>
+                                </div>
+                                <div className="text-[8px] font-bold text-slate-400 italic uppercase">
+                                    {board.updated_at ? new Date(board.updated_at).toLocaleDateString() : 'N/A'}
+                                </div>
+                            </div>
+                            
+                            <div className={`p-4 rounded-[1.5rem] border transition-colors ${!board.id ? 'bg-slate-100/50 border-slate-200 border-dashed' : 'bg-slate-50 border-slate-100 group-hover:border-blue-500/20'}`}>
+                                <p className={`text-xs font-bold leading-tight italic ${!board.id ? 'text-slate-400' : 'text-slate-700'}`}>
+                                    "{!board.id ? 'Discovery card pending...' : (board.promo_text || 'Active promotion...')}"
+                                </p>
+                            </div>
+                            
+                            <div className="flex items-center justify-between pt-1">
+                                <button 
+                                    className={`px-6 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-colors shadow-lg active:scale-95 ${!board.id ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-950 text-white hover:bg-slate-800'}`}
+                                    disabled={!board.id}
+                                >
+                                    {!board.id ? 'Hold' : 'Claim'}
+                                </button>
+                                <div className="flex -space-x-2">
+                                    {[1,2,3].map(i => (
+                                        <div key={i} className="w-5 h-5 rounded-full bg-slate-200 border-2 border-white shadow-sm"></div>
+                                    ))}
+                                    <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[7px] font-black border-2 border-white">+3</div>
+                                </div>
+                            </div>
+                         </div>
+                      </div>
+                  ))}
+              </div>
+          )}
       </section>
 
-      {/* Stats strip — scroll reveal */}
-      <section
-        data-section="stats"
-        className={`py-16 px-6 bg-returni-dark transition-all duration-700 ${visible.stats ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-      >
-        <div className="max-w-4xl mx-auto grid grid-cols-3 gap-6 text-center text-white">
-          {[
-            { value: '4hrs', label: 'Session timeout for security' },
-            { value: '$10', label: 'Flat monthly fee for merchants' },
-            { value: '2-5%', label: 'Configurable backpay per sale' },
-          ].map((s, i) => (
-            <div key={i} className="group">
-              <p className="text-4xl font-black text-returni-green group-hover:scale-110 transition-transform duration-300">{s.value}</p>
-              <p className="text-white/50 text-sm font-medium mt-1">{s.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <style>{`
-        @keyframes float {
-          from { transform: translateY(0px); }
-          to { transform: translateY(-12px); }
-        }
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
     </main>
   );
