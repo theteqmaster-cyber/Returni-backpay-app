@@ -1,0 +1,189 @@
+
+> returni-backpay-app@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.35
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ (pwa) Compiling for server...
+ ✓ (pwa) Compiling for server...
+ ✓ (pwa) Compiling for client (static)...
+ ○ (pwa) Service worker: /home/mphatic/Desktop/Returni-backpay-app/public/sw.js
+ ○ (pwa)   URL: /sw.js
+ ○ (pwa)   Scope: /
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+./src/app/admin/merchants/[id]/page.tsx
+41:6  Warning: React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/demo-merchant/dashboard/page.tsx
+361:53  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+413:37  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+422:41  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+429:41  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+563:37  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/demo-merchant/wallet/page.tsx
+44:6  Warning: React Hook useEffect has a missing dependency: 'fetchWalletData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/page.tsx
+141:37  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+150:41  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+157:41  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/73) ...
+Admin txns error: B [Error]: Dynamic server usage: Route /api/admin/transactions couldn't be rendered statically because it used `request.url`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at V (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:21778)
+    at Object.get (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:29465)
+    at c (/home/mphatic/Desktop/Returni-backpay-app/.next/server/app/api/admin/transactions/route.js:1:624)
+    at /home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:38417
+    at /home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/server/lib/trace/tracer.js:140:36
+    at NoopContextManager.with (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:7062)
+    at ContextAPI.with (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:518)
+    at NoopTracer.startActiveSpan (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:18093)
+    at ProxyTracer.startActiveSpan (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:18854)
+    at /home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/server/lib/trace/tracer.js:122:103 {
+  description: "Route /api/admin/transactions couldn't be rendered statically because it used `request.url`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+   Generating static pages (18/73) 
+Report error: B [Error]: Dynamic server usage: Route /api/merchant/report couldn't be rendered statically because it used `request.url`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at V (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:21778)
+    at Object.get (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:29465)
+    at l (/home/mphatic/Desktop/Returni-backpay-app/.next/server/app/api/merchant/report/route.js:1:624)
+    at /home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:38417
+    at /home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/server/lib/trace/tracer.js:140:36
+    at NoopContextManager.with (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:7062)
+    at ContextAPI.with (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:518)
+    at NoopTracer.startActiveSpan (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:18093)
+    at ProxyTracer.startActiveSpan (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:18854)
+    at /home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/server/lib/trace/tracer.js:122:103 {
+  description: "Route /api/merchant/report couldn't be rendered statically because it used `request.url`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Stats error: B [Error]: Dynamic server usage: Route /api/stats couldn't be rendered statically because it used `request.url`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at V (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:21778)
+    at Object.get (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:29465)
+    at l (/home/mphatic/Desktop/Returni-backpay-app/.next/server/app/api/stats/route.js:1:640)
+    at /home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:38417
+    at /home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/server/lib/trace/tracer.js:140:36
+    at NoopContextManager.with (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:7062)
+    at ContextAPI.with (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:518)
+    at NoopTracer.startActiveSpan (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:18093)
+    at ProxyTracer.startActiveSpan (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:18854)
+    at /home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/server/lib/trace/tracer.js:122:103 {
+  description: "Route /api/stats couldn't be rendered statically because it used `request.url`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Trader stats error: B [Error]: Dynamic server usage: Route /api/trader/stats couldn't be rendered statically because it used `request.url`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at V (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:21778)
+    at Object.get (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:29465)
+    at l (/home/mphatic/Desktop/Returni-backpay-app/.next/server/app/api/trader/stats/route.js:1:690)
+    at /home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:38417
+    at /home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/server/lib/trace/tracer.js:140:36
+    at NoopContextManager.with (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:7062)
+    at ContextAPI.with (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:518)
+    at NoopTracer.startActiveSpan (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:18093)
+    at ProxyTracer.startActiveSpan (/home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:18854)
+    at /home/mphatic/Desktop/Returni-backpay-app/node_modules/next/dist/server/lib/trace/tracer.js:122:103 {
+  description: "Route /api/trader/stats couldn't be rendered statically because it used `request.url`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+   Generating static pages (36/73) 
+   Generating static pages (54/73) 
+ ✓ Generating static pages (73/73)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                  Size     First Load JS
+┌ ○ /                                        3.18 kB         110 kB
+├ ○ /_not-found                              876 B          90.5 kB
+├ ○ /about                                   3.11 kB         110 kB
+├ ○ /admin/agents                            1.72 kB         100 kB
+├ ○ /admin/agents/performance                1.38 kB        99.7 kB
+├ ○ /admin/audit-log                         1.68 kB         100 kB
+├ ○ /admin/backpay                           1.5 kB         99.8 kB
+├ ○ /admin/commissions                       1.62 kB         100 kB
+├ ○ /admin/dashboard                         2.31 kB         101 kB
+├ ○ /admin/fees                              1.25 kB        99.6 kB
+├ ○ /admin/login                             1.35 kB        99.7 kB
+├ ○ /admin/merchants                         2.16 kB         100 kB
+├ ƒ /admin/merchants/[id]                    2.79 kB         101 kB
+├ ○ /admin/tickets                           1.82 kB         100 kB
+├ ○ /admin/traders                           2.14 kB         100 kB
+├ ○ /admin/transactions                      1.98 kB         100 kB
+├ ○ /agent/dashboard                         4.66 kB        94.3 kB
+├ ○ /agent/login                             1.29 kB        99.6 kB
+├ ○ /api/admin/agent-performance             0 B                0 B
+├ ƒ /api/admin/agents                        0 B                0 B
+├ ƒ /api/admin/audit-log                     0 B                0 B
+├ ƒ /api/admin/commissions                   0 B                0 B
+├ ○ /api/admin/export                        0 B                0 B
+├ ƒ /api/admin/merchants                     0 B                0 B
+├ ƒ /api/admin/merchants/[id]                0 B                0 B
+├ ○ /api/admin/revenue-chart                 0 B                0 B
+├ ○ /api/admin/stats                         0 B                0 B
+├ ○ /api/admin/support                       0 B                0 B
+├ ƒ /api/admin/traders                       0 B                0 B
+├ ƒ /api/admin/transactions                  0 B                0 B
+├ ƒ /api/agent/stats                         0 B                0 B
+├ ƒ /api/analytics/weekly                    0 B                0 B
+├ ƒ /api/auth/login                          0 B                0 B
+├ ƒ /api/auth/logout                         0 B                0 B
+├ ƒ /api/backpay/[token]                     0 B                0 B
+├ ƒ /api/claims                              0 B                0 B
+├ ƒ /api/demo/auth/login                     0 B                0 B
+├ ƒ /api/demo/auth/signup                    0 B                0 B
+├ ƒ /api/demo/brickboard                     0 B                0 B
+├ ƒ /api/demo/inventory                      0 B                0 B
+├ ƒ /api/demo/kyc/complete                   0 B                0 B
+├ ƒ /api/demo/terminal/sale                  0 B                0 B
+├ ƒ /api/demo/vest-ai                        0 B                0 B
+├ ƒ /api/demo/wallet                         0 B                0 B
+├ ƒ /api/merchant/report                     0 B                0 B
+├ ƒ /api/merchant/settings                   0 B                0 B
+├ ƒ /api/merchants                           0 B                0 B
+├ ƒ /api/stats                               0 B                0 B
+├ ƒ /api/support                             0 B                0 B
+├ ƒ /api/sync                                0 B                0 B
+├ ƒ /api/trader/merchants/[id]/transactions  0 B                0 B
+├ ƒ /api/trader/stats                        0 B                0 B
+├ ƒ /api/transactions                        0 B                0 B
+├ ƒ /api/visit                               0 B                0 B
+├ ƒ /bp/[token]                              2.15 kB         106 kB
+├ ○ /demo-merchant/dashboard                 6.49 kB         108 kB
+├ ○ /demo-merchant/inventory                 3.69 kB         161 kB
+├ ○ /demo-merchant/login                     2.44 kB         104 kB
+├ ○ /demo-merchant/signup                    2.53 kB         101 kB
+├ ○ /demo-merchant/terminal                  4.14 kB         112 kB
+├ ○ /demo-merchant/vest-ai                   2.77 kB         105 kB
+├ ○ /demo-merchant/wallet                    4.09 kB         112 kB
+├ ○ /icon.png                                0 B                0 B
+├ ○ /merchant/analytics                      2.5 kB          104 kB
+├ ○ /merchant/dashboard                      6.8 kB          114 kB
+├ ○ /merchant/login                          1.37 kB        99.7 kB
+├ ○ /merchant/print                          2.78 kB        97.7 kB
+├ ○ /merchant/qr                             1.88 kB         100 kB
+├ ○ /merchant/setup                          142 B          89.8 kB
+├ ○ /merchant/transaction                    2.78 kB         107 kB
+├ ○ /scan                                    1.89 kB         155 kB
+├ ○ /support                                 1.78 kB         100 kB
+├ ○ /terms                                   2.42 kB         101 kB
+├ ○ /trader/dashboard                        4.98 kB         107 kB
+├ ○ /trader/login                            1.4 kB         99.7 kB
+└ ƒ /trader/merchants/[id]/transactions      2.25 kB         101 kB
++ First Load JS shared by all                89.6 kB
+  ├ chunks/6997-779682090abf2b97.js          33.9 kB
+  ├ chunks/fd9d1056-7b23e369adfcde23.js      53.6 kB
+  └ other shared chunks (total)              2.06 kB
+
+
+ƒ Middleware                                 35.8 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     // Create session
     await createSession({
       id: user.id,
-      role: 'demo_merchant',
+      role: 'merchant_user',
       merchant_id: user.id,
     });
 

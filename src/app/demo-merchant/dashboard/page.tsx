@@ -24,6 +24,8 @@ export default function DemoMerchantDashboardPage() {
       is_published: true
   });
   const [savingBrickboard, setSavingBrickboard] = useState(false);
+  const [backpayEnabled, setBackpayEnabled] = useState(true);
+  const [backpayRate, setBackpayRate] = useState(2);
   const [idPhoto, setIdPhoto] = useState<string | null>(null);
 
   // File Upload Handlers
@@ -445,7 +447,7 @@ export default function DemoMerchantDashboardPage() {
                                 <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-1 scale-90 origin-left">Verified Merchant</p>
                             </div>
                             <p className="text-xs font-bold text-slate-600 leading-tight border-l-4 border-blue-500 pl-4 py-1 italic">
-                                "{brickboard.promo_text || 'Active promotion text...'}"
+                                &quot;{brickboard.promo_text || 'Active promotion text...'}&quot;
                             </p>
                             <div className="flex gap-2 pt-1">
                                 <div className="bg-slate-900 text-white px-4 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest">Redeem Offer</div>
@@ -455,6 +457,55 @@ export default function DemoMerchantDashboardPage() {
                 </div>
              </div>
         </section>
+
+        {/* BACKPAY CONFIGURATION CARD (Separate Row) */}
+        <div className="bg-slate-900/40 backdrop-blur-3xl p-10 rounded-[3rem] border border-white/5 relative group overflow-hidden mt-12 max-w-2xl">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 rounded-full blur-[80px]"></div>
+            
+            <div className="flex justify-between items-start mb-8">
+                <div>
+                    <h3 className="text-3xl font-black text-white italic tracking-tighter leading-none mb-2">Backpay Settings</h3>
+                    <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.25em]">Automated Customer Loyalty Protocol</p>
+                </div>
+                <button 
+                    onClick={() => setBackpayEnabled(!backpayEnabled)}
+                    className={`relative w-14 h-8 rounded-full transition-all duration-300 ${backpayEnabled ? 'bg-blue-600' : 'bg-slate-800'}`}
+                >
+                    <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-transform duration-300 ${backpayEnabled ? 'left-7' : 'left-1'}`}></div>
+                </button>
+            </div>
+
+            <div className="space-y-6">
+                <div>
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.25em] mb-4 ml-1">Reward Percentage</label>
+                    <div className="grid grid-cols-4 gap-3">
+                        {[2, 3, 4, 5].map((rate) => (
+                            <button
+                                key={rate}
+                                onClick={() => setBackpayRate(rate)}
+                                className={`py-4 rounded-2xl font-black text-sm transition-all border ${backpayRate === rate ? 'bg-blue-600 text-white border-blue-500 shadow-xl shadow-blue-600/20' : 'bg-white/5 text-slate-400 border-white/5 hover:bg-white/10'}`}
+                            >
+                                {rate}%
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="p-6 bg-blue-500/5 rounded-[2rem] border border-blue-500/10 flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 text-sm">!</div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
+                        Note: This backpay configuration will automatically apply to all upcoming customer transactions.
+                    </p>
+                </div>
+
+                <button 
+                    className="w-full py-5 bg-slate-950 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-[0.3em] border border-white/10 hover:bg-black transition-all active:scale-95 shadow-2xl"
+                    onClick={() => alert(`Backpay settings applied at ${backpayRate}%!`)}
+                >
+                    Apply Protocol
+                </button>
+            </div>
+        </div>
       </div>
 
       {/* Floating Action Button (FAB) for Vest AI */}
@@ -470,18 +521,6 @@ export default function DemoMerchantDashboardPage() {
           </div>
       </Link>
 
-      {/* Floating Action Button (FAB) for Vest AI */}
-      <Link 
-        href="/demo-merchant/vest-ai"
-        className="fixed bottom-10 right-10 z-50 w-16 h-16 bg-blue-600 text-white rounded-2xl shadow-2xl shadow-blue-600/40 flex items-center justify-center font-black italic text-2xl hover:bg-blue-700 transition-all active:scale-90 group group"
-      >
-          <span className="relative z-10 group-hover:scale-110 transition-transform">V</span>
-          <div className="absolute inset-0 bg-blue-600 rounded-2xl animate-ping opacity-20 group-hover:opacity-40 transition-opacity"></div>
-          {/* Tooltip */}
-          <div className="absolute right-20 top-1/2 -translate-y-1/2 px-4 py-2 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-white/10 shadow-2xl">
-              Talk to Vest AI
-          </div>
-      </Link>
 
       {/* Floating KYC Reminder */}
       {!kycCompleted && (

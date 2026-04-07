@@ -58,17 +58,45 @@ export default function HomePage() {
     });
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white font-sans selection:bg-blue-500/30">
+    <main className="min-h-screen text-white font-sans selection:bg-blue-500/30">
+      {/* Absolute Backdrop Layer */}
+      <div className="fixed inset-0 bg-slate-950 -z-50"></div>
+
       {/* Decorative Orbs */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none -z-40"></div>
+      
+      {/* Heavy Watermarks (NUST & Returni Showoff - Deep Background) */}
+      <div className="fixed inset-0 pointer-events-none -z-30 flex items-end justify-between px-20 pb-20 overflow-hidden">
+          <div className="opacity-[0.08] grayscale brightness-0 invert filter blur-[1px] hover:blur-none transition-all duration-1000 rotate-[-15deg] scale-150 origin-bottom-left">
+              <Image src="/LogoRe.jpg" alt="Returni Watermark" width={400} height={400} />
+          </div>
+          <div className="opacity-[0.08] grayscale brightness-0 invert filter blur-[1px] hover:blur-none transition-all duration-1000 rotate-[15deg] scale-150 origin-bottom-right">
+              <Image src="/logo_nust_png.png" alt="NUST Watermark" width={400} height={400} />
+          </div>
+      </div>
       
       {/* Top Navbar */}
       <nav className="p-6 flex justify-between items-center max-w-7xl mx-auto sticky top-0 bg-slate-950/80 backdrop-blur-xl z-50 border-b border-white/5">
-        <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-black italic text-white shadow-lg shadow-blue-600/20">R</div>
-            <span className="font-black tracking-tighter text-xl italic uppercase">Returni <span className="text-blue-500">Discovery</span></span>
-        </div>
-        <div className="flex gap-4">
+        <Link href="/about" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
+            <div className="relative">
+                <div className="absolute inset-0 bg-blue-600/20 blur-lg rounded-xl group-hover:blur-xl transition-all"></div>
+                <Image 
+                    src="/logo.jpg" 
+                    alt="Returni" 
+                    width={40} 
+                    height={40} 
+                    className="relative rounded-xl border border-white/10 shadow-2xl"
+                />
+            </div>
+            <div className="flex flex-col">
+                <span className="font-black tracking-tighter text-xl italic uppercase leading-none">Returni</span>
+                <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest mt-1">Foundational Resilience</span>
+            </div>
+        </Link>
+        <div className="flex gap-3">
+            <Link href="/trader/login" className="px-4 py-2.5 bg-blue-600/10 hover:bg-blue-600/20 rounded-xl text-[10px] font-black uppercase tracking-widest border border-blue-600/20 text-blue-400 transition-all">
+                Trader Node
+            </Link>
             <Link href="/demo-merchant/login" className="px-5 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all">
                 Merchant Portal
             </Link>
@@ -171,7 +199,7 @@ export default function HomePage() {
                             
                             <div className={`p-4 rounded-[1.5rem] border transition-colors ${!board.id ? 'bg-slate-100/50 border-slate-200 border-dashed' : 'bg-slate-50 border-slate-100 group-hover:border-blue-500/20'}`}>
                                 <p className={`text-xs font-bold leading-tight italic ${!board.id ? 'text-slate-400' : 'text-slate-700'}`}>
-                                    "{!board.id ? 'Discovery card pending...' : (board.promo_text || 'Active promotion...')}"
+                                    &quot;{!board.id ? 'Discovery card pending...' : (board.promo_text || 'Active promotion...')}&quot;
                                 </p>
                             </div>
                             
@@ -196,7 +224,7 @@ export default function HomePage() {
           )}
       </section>
 
-      <style jsx>{`
+      <style>{`
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
