@@ -11,195 +11,209 @@ export default function AboutPage() {
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    // Intersection Observer for reveal animations
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(e => {
           if (e.isIntersecting) {
             const key = e.target.getAttribute('data-reveal');
-            if (key) setVisible(prev => ({ ...prev, [key]: true }));
+            if (key) setVisible(v => ({ ...v, [key]: true }));
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.15 }
     );
-
     document.querySelectorAll('[data-reveal]').forEach(el => observer.observe(el));
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, []);
 
-  const getRevealClass = (key: string) => 
-    `transition-all duration-[1000ms] ${visible[key] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`;
-
-  const features = [
-    {
-      id: 'kyc',
-      icon: '🛡️',
-      title: 'Foundational KYC',
-      desc: 'Trust at the core. Secure, AI-driven identity verification that protects every node in the ecosystem.',
-      accent: 'blue'
-    },
-    {
-      id: 'inventory',
-      icon: '📸',
-      title: 'Inventory Scan',
-      desc: 'Stock at speed. Scan physical inventory to instantly sync your digital node with your physical shelf.',
-      accent: 'green'
-    },
-    {
-      id: 'wallet',
-      icon: '💳',
-      title: 'Zero-Gate Wallet',
-      desc: 'The Node Economy. Instant, zero-fee value exchange designed specifically for high-velocity merchants.',
-      accent: 'blue'
-    },
-    {
-      id: 'audit',
-      icon: '📈',
-      title: 'Audit & Credit',
-      desc: 'Data to Capital. Transform your transaction history into a verified, immutable business credit score.',
-      accent: 'green'
-    },
-    {
-      id: 'vest',
-      icon: '🧠',
-      title: 'Vest AI Manager',
-      desc: 'Financial Autonomy. An intelligent, autonomous manager that optimizes cash flow and growth strategies.',
-      accent: 'indigo'
-    },
-    {
-      id: 'brickboard',
-      icon: '📺',
-      title: 'Brickboard Hub',
-      desc: 'Visibility First. Broadcast your promotions to the entire local node community via the Discovery Feed.',
-      accent: 'blue'
-    },
-    {
-      id: 'backpay',
-      icon: '🎁',
-      title: 'Backpay Protocol',
-      desc: 'Automated Loyalty. Set your rewards once and let the system bring customers back effortlessly.',
-      accent: 'green'
-    }
-  ];
+  const reveal = (key: string, delay = 0) =>
+    `transition-all duration-700 ${visible[key] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`
+    + (delay ? ` delay-${delay}` : '');
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white selection:bg-blue-500/30 overflow-x-hidden font-sans">
-      
-      {/* BACKGROUND ELEMENTS */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-          <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-600/10 rounded-full blur-[150px] animate-pulse-custom"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-emerald-600/10 rounded-full blur-[150px] animate-pulse-custom" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]"></div>
+    <div className="overflow-x-hidden">
+
+      {/* Hero */}
+      <section className="relative min-h-[80vh] flex items-center justify-center bg-returni-dark overflow-hidden">
+        {/* Animated gradient ring behind logo */}
+        <div
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: 600, height: 600,
+            background: 'conic-gradient(from 0deg, #2E7D32, #1565C0, #2E7D32)',
+            opacity: 0.12,
+            filter: 'blur(60px)',
+            top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            animation: 'spin 12s linear infinite',
+          }}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(46,125,50,0.15)_0%,_transparent_70%)]" />
+
+        <div className="relative z-10 text-center px-6 max-w-3xl" style={{ transform: `translateY(${scrollY * 0.2}px)` }}>
+          <div className="flex justify-center mb-8">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-3xl bg-returni-green/40 blur-2xl scale-125 animate-pulse" />
+              <Image
+                src="/logo.jpg"
+                alt="RETURNi"
+                width={120}
+                height={120}
+                className="relative rounded-3xl shadow-2xl border-4 border-white/20 object-cover aspect-square"
+              />
+            </div>
+          </div>
+          <div className="inline-block bg-returni-green/20 border border-returni-green/40 text-returni-green text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest mb-6">
+            About RETURNi
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight tracking-tight">
+            Keep Customers<br /><span className="text-returni-green">Coming Back.</span>
+          </h1>
+          <p className="text-white/60 text-xl leading-relaxed max-w-xl mx-auto">
+            A dead-simple loyalty platform built for real African businesses — no tech skills required.
+          </p>
+        </div>
+
+        {/* Floating particles */}
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="absolute rounded-full bg-returni-green/15 pointer-events-none" style={{
+            width: 6 + i * 3, height: 6 + i * 3,
+            top: `${10 + i * 10}%`, left: `${5 + i * 12}%`,
+            animation: `float ${4 + i}s ease-in-out infinite alternate`,
+          }} />
+        ))}
+      </section>
+
+      {/* The Problem */}
+      <section className="py-24 px-6 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div data-reveal="problem" className={reveal('problem')}>
+            <p className="text-xs font-bold text-returni-green uppercase tracking-widest mb-3 text-center">The problem</p>
+            <h2 className="text-4xl font-black text-returni-dark text-center mb-6 leading-tight">
+              Your customers <span className="text-red-500 line-through">disappear</span><br /> after their first visit.
+            </h2>
+            <p className="text-center text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
+              It costs 5× more to get a new customer than to keep an existing one. But most small businesses have <strong>no system</strong> to bring customers back — just hoping they remember.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mt-16">
+            {[
+              { icon: '😔', stat: '68%', label: 'of customers leave because they feel ignored' },
+              { icon: '💸', stat: '5×', label: 'more expensive to acquire a new customer' },
+              { icon: '📉', stat: '0', label: 'small businesses with a real loyalty system' },
+            ].map((item, i) => (
+              <div key={i} data-reveal={`problem-card-${i}`} className={`bg-gray-50 rounded-3xl p-8 text-center border border-gray-100 hover:border-returni-green/30 hover:shadow-lg transition-all duration-300 ${reveal(`problem-card-${i}`)}`}
+                style={{ transitionDelay: `${i * 100}ms` }}>
+                <div className="text-5xl mb-4">{item.icon}</div>
+                <p className="text-5xl font-black text-returni-dark mb-2">{item.stat}</p>
+                <p className="text-gray-500 text-sm leading-relaxed">{item.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* The Solution */}
+      <section className="py-24 px-6 bg-returni-dark">
+        <div className="max-w-5xl mx-auto">
+          <div data-reveal="solution" className={`text-center mb-16 ${reveal('solution')}`}>
+            <p className="text-xs font-bold text-returni-green uppercase tracking-widest mb-3">The solution</p>
+            <h2 className="text-4xl font-black text-white leading-tight">
+              RETURNi makes loyalty<br /><span className="text-returni-green">effortless</span>
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            {[
+              { icon: '🛒', title: 'Sale recorded, reward sent instantly', desc: 'When a merchant enters a sale, RETURNi automatically calculates the customer\'s backpay and generates a unique QR code — no extra steps.' },
+              { icon: '📱', title: 'No app. No account. Just scan.', desc: 'Customers receive their QR via WhatsApp. They scan it at their next visit to redeem their reward. Dead simple.' },
+              { icon: '📊', title: 'Real-time dashboard', desc: 'Merchants see today\'s sales, total volume, backpay liability, and their agent\'s contact — all in one clean screen.' },
+              { icon: '🤝', title: 'Agent network', desc: 'Our agents visit merchants, sign them up, and support them on the ground. You\'re never alone.' },
+            ].map((item, i) => (
+              <div key={i} data-reveal={`sol-${i}`} className={`bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 hover:border-returni-green/40 transition-all duration-300 group ${reveal(`sol-${i}`)}`}
+                style={{ transitionDelay: `${i * 120}ms` }}>
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">{item.icon}</div>
+                <h3 className="font-extrabold text-white text-xl mb-3">{item.title}</h3>
+                <p className="text-white/50 text-sm leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Join */}
+      <section className="py-24 px-6 bg-gradient-to-b from-returni-bg to-green-50">
+        <div className="max-w-4xl mx-auto">
+          <div data-reveal="why" className={`text-center mb-16 ${reveal('why')}`}>
+            <p className="text-xs font-bold text-returni-green uppercase tracking-widest mb-3">Why join</p>
+            <h2 className="text-4xl font-black text-returni-dark leading-tight">
+              What you get for <span className="text-returni-green">$10/month</span>
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-5">
+            {[
+              { icon: '✅', title: 'Full merchant dashboard', desc: 'Sales tracking, backpay liability, agent support contact, and printable sales reports.' },
+              { icon: '✅', title: 'Automated loyalty rewards', desc: 'Every sale automatically generates a customer reward. No manual work.' },
+              { icon: '✅', title: 'Dedicated field agent', desc: 'Your own RETURNi agent visits your business, helps onboard, and provides ongoing support.' },
+              { icon: '✅', title: 'QR & WhatsApp delivery', desc: 'Rewards go straight to your customers via WhatsApp — they don\'t need to do anything complicated.' },
+              { icon: '✅', title: 'No setup fees', desc: 'Just $10/month. Cancel anytime. No contracts.' },
+              { icon: '✅', title: 'Secure & private', desc: 'Your business data is secured with industry-standard encryption. 4-hour auto-logout for safety.' },
+            ].map((item, i) => (
+              <div key={i} data-reveal={`why-${i}`} className={`flex gap-4 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md hover:border-returni-green/20 transition-all duration-300 ${reveal(`why-${i}`)}`}
+                style={{ transitionDelay: `${i * 80}ms` }}>
+                <span className="text-2xl flex-shrink-0">{item.icon}</span>
+                <div>
+                  <p className="font-extrabold text-returni-dark mb-1">{item.title}</p>
+                  <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Us CTA */}
+      <section className="py-24 px-6 bg-returni-green">
+        <div data-reveal="cta" className={`max-w-2xl mx-auto text-center ${reveal('cta')}`}>
+          <h2 className="text-4xl font-black text-white mb-4 leading-tight">
+            Ready to bring your<br />customers back?
+          </h2>
+          <p className="text-white/80 text-lg mb-10 leading-relaxed">
+            Get in touch. Our team will reach out, explain everything in person, and get you set up — usually within 24 hours.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="https://wa.me/263780884195"
+              className="flex items-center justify-center gap-3 bg-white text-returni-green font-black text-lg px-8 py-4 rounded-2xl hover:scale-105 transition-transform shadow-xl shadow-green-900/30"
+            >
+              <span className="text-2xl">💬</span> Chat on WhatsApp
+            </a>
+            <a
+              href="mailto:theteqmaster@gmail.com"
+              className="flex items-center justify-center gap-3 bg-white/20 border-2 border-white text-white font-bold text-lg px-8 py-4 rounded-2xl hover:bg-white/30 transition-colors"
+            >
+              <span className="text-2xl">✉️</span> Send an Email
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Back home */}
+      <div className="py-8 bg-returni-dark text-center">
+        <Link href="/" className="text-white/40 hover:text-white/70 transition-colors text-sm font-medium">
+          ← Back to Home
+        </Link>
       </div>
 
-      {/* NAVBAR (Static Simple) */}
-      <nav className="fixed top-0 left-0 right-0 p-8 flex justify-between items-center z-[100] backdrop-blur-md border-b border-white/5">
-          <Link href="/" className="flex items-center gap-3">
-              <Image src="/logo.jpg" alt="Logo" width={32} height={32} className="rounded-lg" />
-              <span className="font-black italic uppercase tracking-tighter text-xl">Returni</span>
-          </Link>
-          <div className="flex gap-8 items-center">
-              <Link href="/demo-merchant/signup" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">Register Hub</Link>
-              <Link href="/demo-merchant/login" className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all">Enter Portal</Link>
-          </div>
-      </nav>
-
-      {/* HERO SECTION */}
-      <section className="relative pt-48 pb-32 px-6 flex flex-col items-center text-center z-10">
-          <div className="relative mb-12" data-reveal="hero-logo">
-              <div className="absolute inset-0 bg-blue-600/20 blur-3xl scale-150 animate-pulse-custom"></div>
-              <Image 
-                src="/logo.jpg" 
-                alt="Returni" 
-                width={160} 
-                height={160} 
-                className="relative rounded-[2.5rem] border-4 border-white/10 shadow-2xl hover:scale-105 transition-transform duration-700"
-              />
-          </div>
-          
-          <div className={getRevealClass('hero-text')} data-reveal="hero-text">
-              <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter leading-none mb-6">
-                The <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Resilience</span><br /> Protocol
-              </h1>
-              <p className="text-slate-400 max-w-2xl mx-auto text-lg md:text-xl font-medium leading-relaxed">
-                Returni is more than a merchant portal. It is a foundational ecosystem designed to empower local economies through AI-driven loyalty, secure commerce, and smart finance.
-              </p>
-          </div>
-      </section>
-
-      {/* THE FEATURE MATRIX */}
-      <section className="relative py-32 px-6 z-10 max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {features.map((feature, i) => (
-                  <div 
-                    key={feature.id} 
-                    data-reveal={feature.id}
-                    className={`group bg-slate-900/40 backdrop-blur-3xl p-10 rounded-[3rem] border border-white/5 hover:border-white/10 transition-all duration-500 hover:-translate-y-2 flex flex-col items-start ${getRevealClass(feature.id)}`}
-                    style={{ transitionDelay: `${i * 100}ms` }}
-                  >
-                      <div className={`w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform duration-500`}>
-                          {feature.icon}
-                      </div>
-                      <h3 className="text-2xl font-black italic tracking-tighter mb-4 group-hover:text-blue-400 transition-colors">{feature.title}</h3>
-                      <p className="text-slate-500 font-bold text-sm leading-relaxed mb-6 group-hover:text-slate-300 transition-colors">
-                          {feature.desc}
-                      </p>
-                      <div className="mt-auto pt-6 border-t border-white/5 w-full">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 group-hover:text-blue-500/50 transition-colors">Protocol v1.02</span>
-                      </div>
-                  </div>
-              ))}
-
-              {/* CALL TO ACTION CARD */}
-              <div 
-                data-reveal="cta-card"
-                className={`lg:col-span-2 bg-gradient-to-br from-blue-600 to-indigo-700 p-12 rounded-[4rem] text-white flex flex-col md:flex-row items-center gap-12 relative overflow-hidden group shadow-2xl shadow-blue-600/30 ${getRevealClass('cta-card')}`}
-              >
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000"></div>
-                  
-                  <div className="relative z-10 flex-1">
-                      <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter leading-none mb-6">
-                        Build Your Resilience Engine.
-                      </h2>
-                      <p className="text-blue-100/80 font-bold mb-8 max-w-md">
-                        Join thousands of merchants across Africa who are reclaiming their customers and securing their financial future with Returni.
-                      </p>
-                      <Link 
-                        href="/demo-merchant/signup" 
-                        className="inline-flex px-12 py-5 bg-white text-blue-600 rounded-3xl font-black text-xs uppercase tracking-widest shadow-2xl hover:scale-105 transition-all active:scale-95"
-                      >
-                        Start Your Node
-                      </Link>
-                  </div>
-                  
-                  <div className="relative z-10 w-48 h-48 bg-white/5 rounded-[3rem] backdrop-blur-xl border border-white/10 flex items-center justify-center p-8 group-hover:rotate-12 transition-transform duration-700">
-                      <Image src="/logo.jpg" alt="CTA Logo" width={100} height={100} className="rounded-2xl" />
-                  </div>
-              </div>
-          </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="relative py-20 px-6 border-t border-white/5 z-10 text-center">
-          <Link href="/" className="inline-flex flex-col items-center gap-4 mb-8">
-              <Image src="/logo.jpg" alt="Footer Logo" width={48} height={48} className="rounded-xl grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all" />
-              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-700">Returni Foundations &copy; 2026</span>
-          </Link>
-      </footer>
-
       <style>{`
-          @keyframes pulse-custom {
-              0%, 100% { opacity: 0.1; }
-              50% { opacity: 0.2; }
-          }
-          .animate-pulse-custom { animation: pulse-custom 4s ease-in-out infinite; }
+        @keyframes float { from { transform: translateY(0); } to { transform: translateY(-14px); } }
+        @keyframes spin { from { transform: translate(-50%,-50%) rotate(0deg); } to { transform: translate(-50%,-50%) rotate(360deg); } }
       `}</style>
-    </main>
+    </div>
   );
 }
