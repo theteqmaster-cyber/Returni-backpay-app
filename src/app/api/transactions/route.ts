@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     // 2. Fetch merchant backpay percentage (default 4.00), name, and promotions
     const { data: merchant, error: merchantError } = await supabase
        .from('merchants')
-       .select('backpay_percent, business_name, promo_text')
+       .select('backpay_percent, business_name, promo_text, backpay_expiry_days')
        .eq('id', merchantId)
        .single();
 
@@ -95,7 +95,8 @@ export async function POST(request: NextRequest) {
     const qrToken = generateRandomToken();
     const shortCode = generateShortCode();
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    const expiryDays = merchant?.backpay_expiry_days || 7;
+    expiresAt.setDate(expiresAt.getDate() + expiryDays);
 
     const { data: backpay, error: bpError } = await supabase
        .from('backpay_records')

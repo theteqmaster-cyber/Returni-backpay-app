@@ -25,6 +25,8 @@ export default function MerchantDashboardPage() {
   const [promoImages, setPromoImages] = useState<string[]>(['', '', '']);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [backpayPercent, setBackpayPercent] = useState<string>('4.00');
+  const [backpayExpiryDays, setBackpayExpiryDays] = useState<number>(7);
 
   useEffect(() => {
     const id = localStorage.getItem('returni_merchant_id');
@@ -48,6 +50,8 @@ export default function MerchantDashboardPage() {
           setStats(data);
           if (data.merchant) {
             setPromoText(data.merchant.promo_text || '');
+            setBackpayPercent(data.merchant.backpay_percent?.toString() || '4.00');
+            setBackpayExpiryDays(data.merchant.backpay_expiry_days || 7);
             if (data.merchant.promo_images && Array.isArray(data.merchant.promo_images)) {
               const imgs = [...data.merchant.promo_images];
               while (imgs.length < 3) imgs.push('');
@@ -75,7 +79,9 @@ export default function MerchantDashboardPage() {
         body: JSON.stringify({
           merchantId,
           promoText,
-          promoImages: promoImages.filter(img => img.trim() !== '')
+          promoImages: promoImages.filter(img => img.trim() !== ''),
+          backpayPercent: parseFloat(backpayPercent),
+          backpayExpiryDays: parseInt(backpayExpiryDays.toString())
         })
       });
       if (!res.ok) throw new Error('Failed to save');
@@ -176,10 +182,19 @@ export default function MerchantDashboardPage() {
           New Sale
         </Link>
         <Link
-          href="/merchant/analytics"
-          className="flex-1 py-4 px-6 rounded-2xl border-2 border-returni-dark text-returni-dark font-bold text-center hover:bg-gray-50 transition-colors"
+          href="/scan"
+          className="flex-1 py-4 px-6 rounded-2xl bg-returni-dark text-white font-bold text-center shadow-lg hover:bg-black transition-all transform hover:-translate-y-0.5"
         >
-          View Analytics
+          Redeem Code
+        </Link>
+      </div>
+
+      <div className="flex gap-4 mb-4">
+        <Link
+          href="/merchant/analytics"
+          className="w-full py-3 px-6 rounded-2xl border-2 border-returni-dark text-returni-dark font-bold text-center hover:bg-gray-50 transition-colors"
+        >
+          View Detailed Analytics
         </Link>
       </div>
 
@@ -190,6 +205,17 @@ export default function MerchantDashboardPage() {
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
         Print / Export Sales Report
       </Link>
+
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-center">
+          <p className="text-returni-dark/60 text-xs font-bold uppercase tracking-widest mb-1">Return Rate</p>
+          <p className="text-3xl font-black text-returni-green">{loading ? '...' : `${(stats as any).returnRate ?? '0.0'}%`}</p>
+        </div>
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-center">
+          <p className="text-returni-dark/60 text-xs font-bold uppercase tracking-widest mb-1">Redeem Rate</p>
+          <p className="text-3xl font-black text-returni-blue">{loading ? '...' : `${(stats as any).redemptionRate ?? '0.0'}%`}</p>
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-center">
@@ -332,6 +358,32 @@ export default function MerchantDashboardPage() {
               placeholder="e.g. Get 20% off your next coffee when you show this receipt!"
               className="w-full px-4 py-3 rounded-2xl border-2 border-gray-100 focus:border-returni-green outline-none transition-all font-medium text-sm h-24 resize-none bg-gray-50/50"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">BackPay Reward %</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max="100"
+                value={backpayPercent}
+                onChange={(e) => setBackpayPercent(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:border-returni-green outline-none transition-all font-bold text-sm bg-gray-50/50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Reward Expiry (Days)</label>
+              <input
+                type="number"
+                min="1"
+                max="365"
+                value={backpayExpiryDays}
+                onChange={(e) => setBackpayExpiryDays(parseInt(e.target.value || '1'))}
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:border-returni-green outline-none transition-all font-bold text-sm bg-gray-50/50"
+              />
+            </div>
           </div>
 
           <div>

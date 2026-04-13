@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
-    const { merchantId, promoText, promoImages } = await request.json();
+    const { merchantId, promoText, promoImages, backpayPercent, backpayExpiryDays } = await request.json();
 
     if (!merchantId) {
       return NextResponse.json({ error: 'Missing merchantId' }, { status: 400 });
@@ -17,7 +17,9 @@ export async function POST(request: NextRequest) {
       .from('merchants')
       .update({
         promo_text: promoText,
-        promo_images: promoImages || []
+        promo_images: promoImages || [],
+        backpay_percent: backpayPercent,
+        backpay_expiry_days: backpayExpiryDays
       })
       .eq('id', merchantId);
 
