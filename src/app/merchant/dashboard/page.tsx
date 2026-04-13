@@ -305,17 +305,16 @@ export default function MerchantDashboardPage() {
       `}</style>
 
       {/* Recent Activity */}
-      <Link href="/merchant/print" className="block mb-8 group/activity transition-all active:scale-[0.99]">
-        <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100 relative overflow-hidden group-hover/activity:shadow-2xl transition-all">
-          <div className="absolute top-0 right-0 p-4 opacity-0 group-hover/activity:opacity-100 transition-opacity">
-            <span className="text-[10px] font-bold text-returni-green uppercase tracking-widest flex items-center gap-1">
-              View Reports <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-            </span>
-          </div>
-        <h2 className="text-xl font-black text-returni-dark mb-4 flex items-center gap-2">
-          <svg className="w-6 h-6 text-returni-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          Recent Activity
-        </h2>
+      <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100 mb-8 relative overflow-hidden">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-black text-returni-dark flex items-center gap-2">
+            <svg className="w-6 h-6 text-returni-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Recent Activity
+          </h2>
+          <Link href="/merchant/print" className="text-[10px] font-bold text-returni-green uppercase tracking-widest hover:underline flex items-center gap-1">
+            View All Reports <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </Link>
+        </div>
         <div className="space-y-4">
           {loading ? (
             [1, 2, 3].map(i => <div key={i} className="h-16 bg-gray-50 animate-pulse rounded-2xl"></div>)
@@ -331,6 +330,15 @@ export default function MerchantDashboardPage() {
                       {tx.currency === 'ZAR' ? 'ZAR ' : tx.currency === 'ZIG' ? 'ZiG ' : '$'}
                       {parseFloat(tx.amount || '0').toFixed(2)}
                     </p>
+                    {(() => {
+                      const bp = Array.isArray(tx.backpay_records) ? tx.backpay_records[0] : tx.backpay_records;
+                      if (!bp) return null;
+                      return (
+                        <p className={`text-[9px] font-black mt-0.5 uppercase tracking-tighter ${bp.status === 'claimed' ? 'text-returni-blue' : 'text-returni-green'}`}>
+                          Reward: {tx.currency === 'ZAR' ? 'ZAR ' : tx.currency === 'ZIG' ? 'ZiG ' : '$'}{parseFloat(bp.backpay_amount).toFixed(2)} • {bp.status === 'claimed' ? 'Redeemed' : 'Active'}
+                        </p>
+                      );
+                    })()}
                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                       {new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
@@ -350,7 +358,6 @@ export default function MerchantDashboardPage() {
           )}
         </div>
       </div>
-    </Link>
 
       <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100 mb-8 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-returni-green/5 rounded-full -mr-16 -mt-16"></div>

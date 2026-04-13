@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
       // 4. Recent Transactions (Limited to 7 as requested)
       supabase.from('transactions')
-        .select('id, amount, currency, payment_method, merchant_notes, created_at')
+        .select('id, amount, currency, payment_method, merchant_notes, created_at, backpay_records(backpay_amount, status)')
         .eq('merchant_id', merchantId)
         .order('created_at', { ascending: false })
         .limit(7),

@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       }),
 
       supabase.from('transactions')
-        .select('id, amount, currency, payment_method, merchant_notes, created_at', { count: 'exact' })
+        .select('id, amount, currency, payment_method, merchant_notes, created_at, backpay_records(backpay_amount, status, customers(phone))', { count: 'exact' })
         .eq('merchant_id', merchantId)
         .gte('created_at', startDateIso)
         .order('created_at', { ascending: false })
@@ -71,6 +71,24 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    // 4. Calculate BackPay stats
+    const totalBackpayIssued = { USD: 0, ZAR: 0, ZIG: 0 };
+    const totalBackpayClaimed = { USD: 0, ZAR: 0, ZIG: 0 };
+
+    transactions?.forEach((tx: any) => {
+      const cur = (tx.currency || 'USD') as 'USD' | 'ZAR' | 'ZIG';
+      // Handle potential array from Supabase join
+      const bp = Array.isArray(tx.backpay_records) ? tx.backpay_records[0] : tx.backpay_records;
+      
+      if (bp) {
+        const amt = parseFloat(bp.backpay_amount || '0');
+        totalBackpayIssued[cur] += amt;
+        if (bp.status === 'claimed') {
+          totalBackpayClaimed[cur] += amt;
+        }
+      }
+    });
+
     return NextResponse.json({
       merchant: {
         business_name: merchant.business_name,
@@ -79,13 +97,30 @@ export async function GET(request: NextRequest) {
         phone: merchant.phone,
       },
       agent: agentName ? { name: agentName, phone: agentPhone } : null,
-      transactions: transactions || [],
+      transactions: transactions?.map(tx => {
+        const bp = Array.isArray(tx.backpay_records) ? tx.backpay_records[0] : tx.backpay_records;
+        return {
+          ...tx,
+          backpay_details: bp,
+          customer_phone: bp?.customers ? (Array.isArray(bp.customers) ? bp.customers[0]?.phone : (bp.customers as any).phone) : null
+        };
+      }) || [],
       summary: {
         totalCount: totalCount || 0,
         totalVolume: {
           USD: totalVolume.USD.toFixed(2),
           ZAR: totalVolume.ZAR.toFixed(2),
           ZIG: totalVolume.ZIG.toFixed(2)
+        },
+        totalBackpayIssued: {
+          USD: totalBackpayIssued.USD.toFixed(2),
+          ZAR: totalBackpayIssued.ZAR.toFixed(2),
+          ZIG: totalBackpayIssued.ZIG.toFixed(2)
+        },
+        totalBackpayClaimed: {
+          USD: totalBackpayClaimed.USD.toFixed(2),
+          ZAR: totalBackpayClaimed.ZAR.toFixed(2),
+          ZIG: totalBackpayClaimed.ZIG.toFixed(2)
         },
         generatedAt: new Date().toISOString(),
       }
