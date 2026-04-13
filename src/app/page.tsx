@@ -95,6 +95,23 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Temporary Apology Notice - Visible only April 13, 2026 */}
+          {new Date().toLocaleDateString('en-CA') === '2026-04-13' && (
+            <div className="mb-8 relative group cursor-default">
+              <div className="absolute inset-0 bg-white/20 blur-xl scale-110 rounded-full" />
+              <div className="relative inline-block px-5 py-3 bg-white/40 backdrop-blur-md border border-white/50 rounded-2xl shadow-lg transform transition-all duration-500 hover:scale-105 hover:bg-white/60">
+                <p className="text-[10px] font-black text-returni-dark uppercase tracking-widest leading-tight mb-1">
+                  Apologising for the recent unannounced updates.
+                </p>
+                <p className="text-[8px] font-bold text-returni-green uppercase tracking-widest opacity-80">
+                  Signed: Returni Tech Department
+                </p>
+              </div>
+              {/* Floating micro-animation dots */}
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-returni-green rounded-full animate-ping" />
+            </div>
+          )}
+
           <h1 className="text-5xl font-black text-returni-dark mb-4 tracking-tight">
             RETURN<span className="text-returni-green">i</span>
           </h1>
