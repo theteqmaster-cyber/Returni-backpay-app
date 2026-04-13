@@ -154,21 +154,33 @@ export default function MerchantPrintPage() {
 
         {/* Summary Bar */}
         <div className="grid grid-cols-4 gap-4 mb-8">
-          <div className="bg-returni-green/10 border border-returni-green/30 rounded-2xl p-5 text-center col-span-4 md:col-span-1">
+          <div className="bg-returni-green/10 border border-returni-green/30 rounded-2xl p-5 text-center flex flex-col justify-center">
             <p className="text-[10px] font-extrabold text-returni-green uppercase tracking-widest mb-1">Total Tx</p>
             <p className="text-3xl font-black text-returni-green">{data.summary.totalCount}</p>
           </div>
           <div className="bg-returni-dark/5 border border-gray-200 rounded-2xl p-4 text-center">
-            <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mb-1">USD Volume</p>
-            <p className="text-xl font-black text-returni-dark">${Number(data.summary.totalVolume.USD).toLocaleString()}</p>
+            <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mb-2">Volume</p>
+            <div className="space-y-1">
+              <p className="text-lg font-black text-returni-dark leading-none">${Number(data.summary.totalVolume.USD).toLocaleString()}</p>
+              <p className="text-[10px] font-bold text-gray-400">ZAR {Number(data.summary.totalVolume.ZAR).toLocaleString()}</p>
+              <p className="text-[10px] font-bold text-gray-400/60">ZiG {Number(data.summary.totalVolume.ZIG).toLocaleString()}</p>
+            </div>
           </div>
           <div className="bg-returni-dark/5 border border-gray-200 rounded-2xl p-4 text-center">
-            <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mb-1">Rewards Issued</p>
-            <p className="text-xl font-black text-returni-green">${Number(data.summary.totalBackpayIssued.USD).toLocaleString()}</p>
+            <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mb-2">Rewards Issued</p>
+            <div className="space-y-1">
+              <p className="text-lg font-black text-returni-green leading-none">${Number(data.summary.totalBackpayIssued.USD).toLocaleString()}</p>
+              <p className="text-[10px] font-bold text-gray-400">ZAR {Number(data.summary.totalBackpayIssued.ZAR).toLocaleString()}</p>
+              <p className="text-[10px] font-bold text-gray-400/60">ZiG {Number(data.summary.totalBackpayIssued.ZIG).toLocaleString()}</p>
+            </div>
           </div>
           <div className="bg-returni-dark/5 border border-gray-200 rounded-2xl p-4 text-center">
-            <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mb-1">Rewards Redeemed</p>
-            <p className="text-xl font-black text-returni-blue">${Number(data.summary.totalBackpayClaimed.USD).toLocaleString()}</p>
+            <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mb-2">Rewards Redeemed</p>
+            <div className="space-y-1">
+              <p className="text-lg font-black text-returni-blue leading-none">${Number(data.summary.totalBackpayClaimed.USD).toLocaleString()}</p>
+              <p className="text-[10px] font-bold text-gray-400">ZAR {Number(data.summary.totalBackpayClaimed.ZAR).toLocaleString()}</p>
+              <p className="text-[10px] font-bold text-gray-400/60">ZiG {Number(data.summary.totalBackpayClaimed.ZIG).toLocaleString()}</p>
+            </div>
           </div>
         </div>
 
@@ -245,22 +257,34 @@ export default function MerchantPrintPage() {
               </tbody>
               {data.transactions.length > 0 && (
                 <tfoot>
-                  <tr className="border-t-2 border-returni-dark">
-                    <td colSpan={5} className="p-3 text-sm font-extrabold text-returni-dark uppercase tracking-wider text-right">TOTAL USD VOLUME</td>
-                    <td className="p-3 text-lg font-black text-returni-green text-right border-l border-gray-200">
-                      ${Number(data.summary.totalVolume.USD).toLocaleString()}
+                  <tr className="border-t-2 border-returni-dark bg-gray-50/50">
+                    <td colSpan={4} className="p-4 text-sm font-extrabold text-returni-dark uppercase tracking-wider text-right">TOTAL VOLUME</td>
+                    <td colSpan={2} className="p-4 border-l border-gray-200">
+                       <div className="flex flex-col items-end gap-1">
+                          <span className="text-lg font-black text-returni-dark">${Number(data.summary.totalVolume.USD).toLocaleString()}</span>
+                          <span className="text-xs font-bold text-gray-400">ZAR {Number(data.summary.totalVolume.ZAR).toLocaleString()}</span>
+                          <span className="text-xs font-bold text-gray-400/60 font-mono">ZiG {Number(data.summary.totalVolume.ZIG).toLocaleString()}</span>
+                       </div>
                     </td>
                   </tr>
-                  <tr>
-                    <td colSpan={5} className="px-3 pb-3 text-sm font-extrabold text-returni-dark uppercase tracking-wider text-right">TOTAL REWARDS ISSUED (USD)</td>
-                    <td className="px-3 pb-3 text-lg font-black text-returni-green text-right border-l border-gray-200">
-                      ${Number(data.summary.totalBackpayIssued.USD).toLocaleString()}
+                  <tr className="bg-green-50/20">
+                    <td colSpan={4} className="p-4 text-sm font-extrabold text-returni-green uppercase tracking-wider text-right">REWARDS ISSUED</td>
+                    <td colSpan={2} className="p-4 border-l border-gray-200">
+                       <div className="flex flex-col items-end gap-1">
+                          <span className="text-lg font-black text-returni-green">${Number(data.summary.totalBackpayIssued.USD).toLocaleString()}</span>
+                          <span className="text-xs font-bold text-gray-400">ZAR {Number(data.summary.totalBackpayIssued.ZAR).toLocaleString()}</span>
+                          <span className="text-xs font-bold text-gray-400/60 font-mono">ZiG {Number(data.summary.totalBackpayIssued.ZIG).toLocaleString()}</span>
+                       </div>
                     </td>
                   </tr>
-                  <tr>
-                    <td colSpan={5} className="px-3 pb-3 text-sm font-extrabold text-returni-dark uppercase tracking-wider text-right">TOTAL REWARDS REDEEMED (USD)</td>
-                    <td className="px-3 pb-3 text-lg font-black text-returni-blue text-right border-l border-gray-200">
-                      ${Number(data.summary.totalBackpayClaimed.USD).toLocaleString()}
+                  <tr className="bg-blue-50/20">
+                    <td colSpan={4} className="p-4 text-sm font-extrabold text-returni-blue uppercase tracking-wider text-right">REWARDS REDEEMED</td>
+                    <td colSpan={2} className="p-4 border-l border-gray-200">
+                       <div className="flex flex-col items-end gap-1">
+                          <span className="text-lg font-black text-returni-blue">${Number(data.summary.totalBackpayClaimed.USD).toLocaleString()}</span>
+                          <span className="text-xs font-bold text-gray-400">ZAR {Number(data.summary.totalBackpayClaimed.ZAR).toLocaleString()}</span>
+                          <span className="text-xs font-bold text-gray-400/60 font-mono">ZiG {Number(data.summary.totalBackpayClaimed.ZIG).toLocaleString()}</span>
+                       </div>
                     </td>
                   </tr>
                 </tfoot>
