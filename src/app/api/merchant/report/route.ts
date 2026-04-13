@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       }),
 
       supabase.from('transactions')
-        .select('id, amount, currency, payment_method, merchant_notes, created_at, backpay_records(backpay_amount, status, customers(phone))', { count: 'exact' })
+        .select('id, amount, currency, payment_method, merchant_notes, created_at, backpay_records(backpay_amount, status, customer_id)', { count: 'exact' })
         .eq('merchant_id', merchantId)
         .gte('created_at', startDateIso)
         .order('created_at', { ascending: false })
@@ -47,7 +47,22 @@ export async function GET(request: NextRequest) {
     if (volError) throw volError;
     if (txError) throw txError;
 
-    // 2. Fetch agent contact if assigned
+    // 2. Fetch customer phones separately to avoid join hangs
+    const customerIds = Array.from(new Set(transactions?.map(tx => {
+       const bp = Array.isArray(tx.backpay_records) ? tx.backpay_records[0] : tx.backpay_records;
+       return bp?.customer_id;
+    }).filter(Boolean)));
+
+    let customerMap: Record<string, string> = {};
+    if (customerIds.length > 0) {
+      const { data: customers } = await supabase
+        .from('customers')
+        .select('id, phone')
+        .in('id', customerIds);
+      customers?.forEach(c => { customerMap[c.id] = c.phone; });
+    }
+
+    // 3. Fetch agent contact if assigned
     let agentName = null;
     let agentPhone = null;
     if (merchant?.agent_id) {
@@ -62,7 +77,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 3. Process volume data
+    // 4. Process volume data
     const totalVolume = { USD: 0, ZAR: 0, ZIG: 0 };
     volData?.forEach((row: any) => {
       const cur = (row.currency || 'USD') as 'USD' | 'ZAR' | 'ZIG';
@@ -71,7 +86,7 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // 4. Calculate BackPay stats
+    // 5. Calculate BackPay stats
     const totalBackpayIssued = { USD: 0, ZAR: 0, ZIG: 0 };
     const totalBackpayClaimed = { USD: 0, ZAR: 0, ZIG: 0 };
 
@@ -91,18 +106,26 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       merchant: {
-        business_name: merchant.business_name,
-        owner_name: (merchant.owner as any)?.full_name || merchant.name,
-        email: merchant.email,
-        phone: merchant.phone,
+        business_name: merchant?.business_name || 'Business Name',
+        owner_name: (merchant?.owner as any)?.full_name || merchant?.name || 'Authorized Owner',
+        email: merchant?.email || '',
+        phone: merchant?.phone || '',
       },
       agent: agentName ? { name: agentName, phone: agentPhone } : null,
       transactions: transactions?.map(tx => {
         const bp = Array.isArray(tx.backpay_records) ? tx.backpay_records[0] : tx.backpay_records;
         return {
-          ...tx,
-          backpay_details: bp,
-          customer_phone: bp?.customers ? (Array.isArray(bp.customers) ? bp.customers[0]?.phone : (bp.customers as any).phone) : null
+          id: tx.id,
+          amount: tx.amount || '0',
+          currency: tx.currency || 'USD',
+          payment_method: tx.payment_method || 'CASH',
+          merchant_notes: tx.merchant_notes || '',
+          created_at: tx.created_at || new Date().toISOString(),
+          backpay_details: bp ? {
+            backpay_amount: bp.backpay_amount || '0',
+            status: bp.status || 'active'
+          } : null,
+          customer_phone: bp?.customer_id ? (customerMap[bp.customer_id] || null) : null
         };
       }) || [],
       summary: {

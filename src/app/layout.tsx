@@ -34,7 +34,7 @@ export default function RootLayout({
         </div>
         
         {/* Global Footer */}
-        <footer className="bg-returni-dark text-white py-8 mt-auto">
+        <footer className="bg-returni-dark text-white py-8 mt-auto no-print">
           <div className="max-w-4xl mx-auto px-6 flex flex-col items-center">
             <div className="flex flex-col items-center gap-2 mb-4">
               <div className="flex gap-4">
