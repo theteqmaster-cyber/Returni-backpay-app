@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { QRCodeSVG } from 'qrcode.react';
+import UnderDevelopmentPopup from '@/components/merchant/UnderDevelopmentPopup';
 
 export default function NewTransactionPage() {
   const [amount, setAmount] = useState('');
@@ -13,6 +14,8 @@ export default function NewTransactionPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [manualBackpay, setManualBackpay] = useState('');
+  
+  const [showUnderDevInfo, setShowUnderDevInfo] = useState(false);
   
   const [successData, setSuccessData] = useState<{
     backpay_amount: number;
@@ -245,16 +248,29 @@ export default function NewTransactionPage() {
 
             {error && <p className="text-red-500 text-sm font-bold">{error}</p>}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-4 rounded-2xl bg-returni-green text-white font-extrabold text-lg hover:bg-returni-darkGreen disabled:opacity-50 transition-all transform hover:-translate-y-0.5 mt-2 shadow-lg shadow-green-600/30"
-            >
-              {loading ? 'Processing...' : `Record ${currency} Transaction`}
-            </button>
+            <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
+               <button
+                 type="button"
+                 onClick={() => setShowUnderDevInfo(true)}
+                 className="w-full py-4 rounded-2xl bg-returni-dark text-white font-extrabold text-lg flex items-center justify-center gap-2 hover:bg-black transition-colors shadow-lg shadow-gray-200"
+               >
+                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                 Pay using Mobile Money
+               </button>
+
+               <button
+                 type="submit"
+                 disabled={loading}
+                 className="w-full py-4 rounded-2xl bg-returni-green text-white font-extrabold text-lg hover:bg-returni-darkGreen disabled:opacity-50 transition-all transform hover:-translate-y-0.5 shadow-lg shadow-green-600/30"
+               >
+                 {loading ? 'Processing...' : `Record ${currency} Transaction`}
+               </button>
+            </div>
           </form>
         </div>
       </div>
+
+      <UnderDevelopmentPopup isOpen={showUnderDevInfo} onClose={() => setShowUnderDevInfo(false)} />
     </main>
   );
 }

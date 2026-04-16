@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     // 1. Find or create the customer by phone
     let customerId = '';
-    const { data: existingCustomer } = await supabase
+    const { data: existingCustomer } = await supabase!
        .from('customers')
        .select('id')
        .eq('phone', phone)
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     if (existingCustomer) {
        customerId = existingCustomer.id;
     } else {
-       const { data: newCustomer, error: createError } = await supabase
+       const { data: newCustomer, error: createError } = await supabase!
           .from('customers')
           .insert({ phone })
           .select('id')
@@ -48,10 +48,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Fetch merchant backpay percentage (default 4.00) and name
-    // 2. Fetch merchant backpay percentage (default 4.00), name, and promotions
-    const { data: merchant, error: merchantError } = await supabase
+    // 2. Fetch merchant backpay percentage (default 4.00), name, and promotions, and their rllet_balance
+    const { data: merchant, error: merchantError } = await supabase!
        .from('merchants')
-       .select('backpay_percent, business_name, promo_text, backpay_expiry_days')
+       .select('backpay_percent, business_name, promo_text, backpay_expiry_days, rllet_balance')
        .eq('id', merchantId)
        .single();
 
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Create transaction record
-    const { data: transaction, error: txError } = await supabase
+    const { data: transaction, error: txError } = await supabase!
        .from('transactions')
        .insert({
           merchant_id: merchantId,
@@ -91,6 +91,18 @@ export async function POST(request: NextRequest) {
     
     if (txError) throw txError;
 
+    // 3.5 Top-up the Rllet Wallet live balance with this sale (USD only)
+    if (merchant.rllet_balance !== undefined && currency === 'USD') {
+       const saleAmount = parseFloat(amount);
+       if (!isNaN(saleAmount) && saleAmount > 0) {
+          const newWalletBalance = parseFloat(merchant.rllet_balance?.toString() || '0') + saleAmount;
+          await supabase!
+             .from('merchants')
+             .update({ rllet_balance: newWalletBalance })
+             .eq('id', merchantId);
+       }
+    }
+
     // 4. Create BackpayRecord
     const qrToken = generateRandomToken();
     const shortCode = generateShortCode();
@@ -98,7 +110,7 @@ export async function POST(request: NextRequest) {
     const expiryDays = merchant?.backpay_expiry_days || 7;
     expiresAt.setDate(expiresAt.getDate() + expiryDays);
 
-    const { data: backpay, error: bpError } = await supabase
+    const { data: backpay, error: bpError } = await supabase!
        .from('backpay_records')
        .insert({
           transaction_id: transaction.id,

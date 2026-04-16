@@ -9,6 +9,7 @@ import PulseGraph from '@/components/PulseGraph';
 import AnalyticsPanel from '@/components/merchant/AnalyticsPanel';
 import PrintReportPanel from '@/components/merchant/PrintReportPanel';
 import BusinessScoreCard from '@/components/merchant/BusinessScoreCard';
+import RlletCard from '@/components/merchant/RlletCard';
 
 export default function MerchantDashboardPage() {
   const router = useRouter();
@@ -544,6 +545,9 @@ export default function MerchantDashboardPage() {
            <span className="text-returni-blue font-bold hover:text-blue-700 cursor-pointer transition-colors">View Receipt &rarr;</span>
         </div>
       </div>
+
+      {/* ─── Rllet Sandbox Wallet Card ─── */}
+      <RlletCard />
 
       {(stats as any).agentContact && (
          <div className="bg-blue-50/50 rounded-2xl p-5 shadow-sm border border-blue-100 mb-8 flex items-start gap-4">
