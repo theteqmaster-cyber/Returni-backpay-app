@@ -95,22 +95,27 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Temporary Apology Notice - Visible only April 13, 2026 */}
-          {new Date().toLocaleDateString('en-CA') === '2026-04-13' && (
-            <div className="mb-8 relative group cursor-default">
-              <div className="absolute inset-0 bg-white/20 blur-xl scale-110 rounded-full" />
-              <div className="relative inline-block px-5 py-3 bg-white/40 backdrop-blur-md border border-white/50 rounded-2xl shadow-lg transform transition-all duration-500 hover:scale-105 hover:bg-white/60">
-                <p className="text-[10px] font-black text-returni-dark uppercase tracking-widest leading-tight mb-1">
-                  Apologising for the recent unannounced updates.
-                </p>
-                <p className="text-[8px] font-bold text-returni-green uppercase tracking-widest opacity-80">
-                  Signed: Returni Tech Department
-                </p>
+          {/* Platform Update Notice */}
+          <div className="mb-8 relative">
+            <div className="relative inline-flex w-full items-start gap-3 px-5 py-4 bg-white/70 backdrop-blur-sm border border-returni-green/30 rounded-2xl shadow-sm shadow-green-900/5 text-left">
+              {/* Thin green left accent */}
+              <div className="absolute left-0 top-3 bottom-3 w-0.5 bg-returni-green rounded-full" />
+              <div className="mt-0.5 flex-shrink-0">
+                <svg className="w-4 h-4 text-returni-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </div>
-              {/* Floating micro-animation dots */}
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-returni-green rounded-full animate-ping" />
+              <div className="pl-1">
+                <p className="text-[11px] font-black text-returni-dark uppercase tracking-widest mb-1">Platform Updates Underway</p>
+                <p className="text-[11px] text-returni-dark/60 font-medium leading-relaxed">
+                  We&apos;re rolling out some improvements. You may notice minor changes to the interface &mdash; everything is working as expected.
+                </p>
+                <p className="text-[9px] font-black text-returni-green uppercase tracking-widest mt-2">Thank you for your patience &mdash; RETURNi Team</p>
+              </div>
+              {/* Subtle ping dot */}
+              <div className="absolute top-3 right-3 w-1.5 h-1.5 bg-returni-green rounded-full animate-ping opacity-60" />
             </div>
-          )}
+          </div>
 
           <h1 className="text-5xl font-black text-returni-dark mb-4 tracking-tight">
             RETURN<span className="text-returni-green">i</span>
