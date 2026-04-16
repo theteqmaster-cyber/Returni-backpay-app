@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { getVestResponse, ChatMessage } from '@/lib/vest';
 
 interface UIMessage {
@@ -22,7 +23,12 @@ const SUGGESTED_QUESTIONS = [
 
 const COOLDOWN_SECONDS = 60;
 
-export default function VestAIPage() {
+function VestChat() {
+  const searchParams = useSearchParams();
+  const scoreParam = searchParams.get('score');   // e.g. "72"
+  const tierParam = searchParams.get('tier');     // e.g. "good"
+  const hasScoreContext = !!scoreParam;
+
   const [messages, setMessages] = useState<UIMessage[]>([]);
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
@@ -63,7 +69,7 @@ export default function VestAIPage() {
       .catch(() => {});
   }, []);
 
-  // Greeting
+  // Greeting — if opened from score card, add contextual auto-question
   useEffect(() => {
     const timer = setTimeout(() => {
       const firstName = merchantName ? ` ${merchantName.split(' ')[0]}` : '';
@@ -72,8 +78,17 @@ export default function VestAIPage() {
         : `Hi${firstName}! 👋 I'm **Vest**, your financial advisor inside RETURNi.\n\nAsk me anything about your sales, backpay rewards, or customer retention — I'll break it down in plain language, no finance degree needed! 😊`;
 
       setMessages([{ id: 'greeting', role: 'vest', text: greeting }]);
+
+      // If opened from the Business Health Score card, auto-ask about the score
+      if (hasScoreContext && scoreParam) {
+        setTimeout(() => {
+          const autoQ = `My Business Health Score is ${scoreParam}/100 (${tierParam ?? 'unknown'} tier). Can you explain what this means for my business and give me a specific plan to improve it using RETURNi\'s BackPay and marketing tools?`;
+          sendMessage(autoQ);
+        }, 800);
+      }
     }, 400);
     return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stats, merchantName]);
 
   // Auto scroll
@@ -300,5 +315,17 @@ User question: ${userMessage}`;
         </p>
       </div>
     </div>
+  );
+}
+
+export default function VestAIPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-returni-bg flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-returni-green border-t-transparent animate-spin" />
+      </div>
+    }>
+      <VestChat />
+    </Suspense>
   );
 }

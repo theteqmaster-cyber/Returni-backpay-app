@@ -8,6 +8,7 @@ import { InstallPWAButton } from '@/components/InstallPWAButton';
 import PulseGraph from '@/components/PulseGraph';
 import AnalyticsPanel from '@/components/merchant/AnalyticsPanel';
 import PrintReportPanel from '@/components/merchant/PrintReportPanel';
+import BusinessScoreCard from '@/components/merchant/BusinessScoreCard';
 
 export default function MerchantDashboardPage() {
   const router = useRouter();
@@ -527,6 +528,9 @@ export default function MerchantDashboardPage() {
           <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Powered by Gemini · Always available</p>
         </div>
       </Link>
+
+      {/* ─── Business Health Score ─── */}
+      <BusinessScoreCard stats={stats} loading={loading} />
 
       <div className="bg-white rounded-2xl p-5 shadow-md border border-returni-green/20 mb-8 relative overflow-hidden">
         <div className="absolute left-0 top-0 bottom-0 w-2 bg-returni-blue"></div>
