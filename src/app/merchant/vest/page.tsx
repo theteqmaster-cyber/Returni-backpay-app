@@ -37,6 +37,10 @@ interface LangStrings {
   returnBad: string;
   errRateLimit: string;
   errGeneral: string;
+  paywallPackage: string;
+  paywallStatus: string;
+  paywallStatusUnpaid: string;
+  paywallAction: string;
 }
 
 const TRANSLATIONS: Record<Lang, LangStrings> = {
@@ -65,6 +69,10 @@ const TRANSLATIONS: Record<Lang, LangStrings> = {
     returnBad: "let's work on growing this 🔵",
     errRateLimit: "⏱ You're sending messages a bit too quickly — the free tier allows about 15 requests per minute.\n\nI'll be ready again in **{secs} seconds**. Sit tight!",
     errGeneral: "Something went wrong. Please try again.",
+    paywallPackage: "Vest AI Business Package",
+    paywallStatus: "Status",
+    paywallStatusUnpaid: "Unpaid",
+    paywallAction: "Buy AI coupon to start chatting with Vest AI",
   },
   sn: {
     dashboard: "Dhibhodhi",
@@ -91,6 +99,10 @@ const TRANSLATIONS: Record<Lang, LangStrings> = {
     returnBad: "ngatiedzekei kukudza izvi 🔵",
     errRateLimit: "⏱ Muri kutumira mameseji nekukasira — free tier inobvumidza mameseji anenge 15 paminiti.\n\nNdichange ndagadzirira mumasekonzi **{secs}**. Ndapota mirirai zvishoma!",
     errGeneral: "Pane chakanganisika. Ndapota edzai zvakare.",
+    paywallPackage: "Chirongwa cheVest AI",
+    paywallStatus: "Status",
+    paywallStatusUnpaid: "Haisati yabhadharwa",
+    paywallAction: "Tenga AI coupon kuti utange kutaura neVest AI",
   },
   nd: {
     dashboard: "IDeshibhodi",
@@ -117,6 +129,10 @@ const TRANSLATIONS: Record<Lang, LangStrings> = {
     returnBad: "kumele sisebenze ukukhulisa lokhu 🔵",
     errRateLimit: "⏱ Uthumela imiyalezo ngokushesha kakhulu — i-free tier ivumela imiyalezo e-15 ngomzuzu.\n\nNgizobe ngilungile emizuzwaneni engu-**{secs}**. Lindanyana!",
     errGeneral: "Kukhona okungalunganga. Siza uzame futhi.",
+    paywallPackage: "Iphakethe ye-Vest AI",
+    paywallStatus: "Isimo",
+    paywallStatusUnpaid: "Ayibhadalwanga",
+    paywallAction: "Thenga i-coupon ye-AI ukuze uqalise ukuxoxa no-Vest AI",
   }
 };
 
@@ -137,6 +153,7 @@ function VestChat() {
   const [merchantName, setMerchantName] = useState('');
   const [cooldown, setCooldown] = useState(0);
   const [isReady, setIsReady] = useState(false);
+  const [isUnpaid, setIsUnpaid] = useState(true); // Update Hairo: Default to unpaid
   
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -166,7 +183,14 @@ function VestChat() {
     if (merchantId) {
        fetch(`/api/stats?merchantId=${merchantId}`)
          .then(r => r.json())
-         .then(data => { if (!data.error) setStats(data); })
+         .then(data => { 
+           if (!data.error) {
+             setStats(data);
+             if (data.merchant?.ai_unpaid !== undefined) {
+               setIsUnpaid(data.merchant.ai_unpaid);
+             }
+           }
+         })
          .catch(() => {})
          .finally(() => setIsReady(true));
     } else {
@@ -284,7 +308,7 @@ function VestChat() {
   };
 
   const sendMessage = async (text: string) => {
-    if (!text.trim() || isThinking || cooldown > 0) return;
+    if (!text.trim() || isThinking || cooldown > 0 || isUnpaid) return;
 
     const userMsg: UIMessage = { id: Date.now().toString(), role: 'user', text: text.trim() };
     const loadingMsg: UIMessage = { id: 'loading', role: 'vest', text: '', loading: true };
@@ -360,7 +384,7 @@ function VestChat() {
     });
   };
 
-  const isBlocked = isThinking || cooldown > 0;
+  const isBlocked = isThinking || cooldown > 0 || isUnpaid;
 
   return (
     <div className="min-h-screen bg-returni-bg flex flex-col max-w-2xl mx-auto xl:max-w-3xl relative">
@@ -450,11 +474,62 @@ function VestChat() {
             </div>
           </div>
         ))}
+
+        {/* Update Hairo: Paywall Receipt */}
+        {isUnpaid && messages.length > 0 && (
+          <div className="flex flex-col items-center justify-center py-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="bg-white border-2 border-dashed border-gray-200 rounded-3xl p-6 w-full max-w-sm shadow-xl shadow-gray-200/50 relative overflow-hidden">
+               {/* Decorative elements */}
+               <div className="absolute top-0 right-0 w-24 h-24 bg-red-50 rounded-full -mr-12 -mt-12 opacity-50" />
+               
+               <div className="relative z-10">
+                 <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className="font-black text-returni-dark text-lg uppercase tracking-tight">{t.paywallPackage}</h3>
+                      <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Update Hairo Edition</p>
+                    </div>
+                    <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center">
+                       <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                       </svg>
+                    </div>
+                 </div>
+
+                 <div className="space-y-4 border-t border-b border-gray-100 py-6 mb-6">
+                    <div className="flex justify-between items-center">
+                       <span className="text-gray-400 font-bold text-xs uppercase">{t.paywallPackage}</span>
+                       <span className="text-returni-dark font-black text-sm">$20.00</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                       <span className="text-gray-400 font-bold text-xs uppercase">{t.paywallStatus}</span>
+                       <span className="bg-red-50 text-red-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ring-1 ring-red-100">
+                         {t.paywallStatusUnpaid}
+                       </span>
+                    </div>
+                 </div>
+
+                 <div className="text-center">
+                    <p className="text-returni-dark font-bold text-xs mb-4 leading-relaxed">
+                      {t.paywallAction}
+                    </p>
+                    <button className="w-full bg-returni-dark text-white font-black py-4 rounded-2xl text-xs uppercase tracking-[0.2em] shadow-lg shadow-gray-900/20 active:scale-95 transition-all">
+                       Buy AI Coupon
+                    </button>
+                 </div>
+               </div>
+            </div>
+            
+            <p className="mt-6 text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">
+               Restricted Access · Business Tier
+            </p>
+          </div>
+        )}
+
         <div ref={bottomRef} className="h-4" />
       </div>
 
       {/* Suggested questions */}
-      {messages.length <= 1 && !isThinking && cooldown === 0 && (
+      {messages.length <= 1 && !isThinking && cooldown === 0 && !isUnpaid && (
         <div className="px-5 pb-4 max-w-xl mx-auto w-full">
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 text-center">{t.tryAsking}</p>
           <div className="flex flex-wrap gap-2.5 justify-center">
@@ -493,7 +568,7 @@ function VestChat() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={cooldown > 0 ? `${t.placeholderBlocked}${cooldown}s...` : t.placeholder}
+            placeholder={isUnpaid ? "Chatting disabled — Packaged expired" : cooldown > 0 ? `${t.placeholderBlocked}${cooldown}s...` : t.placeholder}
             rows={1}
             disabled={isBlocked}
             className="flex-1 mt-1.5 ml-3 resize-none outline-none text-[15px] font-medium text-returni-dark placeholder:text-gray-300 bg-transparent max-h-32 leading-relaxed disabled:cursor-not-allowed"

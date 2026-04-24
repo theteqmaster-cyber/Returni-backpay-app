@@ -1,0 +1,44 @@
+# Link Bank Account | grey-crater-20531 | Documentation
+
+- Smile Cash WalletBank Accounts[POSTLink Bank Account](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/link-bank-account)[GETLinked Bank Accounts](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/linked-bank-accounts)Registration AuthenticationAccount ManagementTransactionsExternal
+- Bank Accounts[POSTLink Bank Account](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/link-bank-account)[GETLinked Bank Accounts](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/linked-bank-accounts)
+- [POSTLink Bank Account](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/link-bank-account)
+- [GETLinked Bank Accounts](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/linked-bank-accounts)
+- Registration Authentication
+- Account Management
+- Transactions
+- External
+- Bank Accounts[POSTLink Bank Account](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/link-bank-account)[GETLinked Bank Accounts](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/linked-bank-accounts)
+- [POSTLink Bank Account](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/link-bank-account)
+- [GETLinked Bank Accounts](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/linked-bank-accounts)
+- Registration Authentication
+- Account Management
+- Transactions
+- External
+- [POSTLink Bank Account](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/link-bank-account)
+- [GETLinked Bank Accounts](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/linked-bank-accounts)
+[POSTLink Bank Account](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/link-bank-account)
+[GETLinked Bank Accounts](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/linked-bank-accounts)
+[Smile Cash Wallet](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/link-bank-account)
+[Bank Accounts](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/link-bank-account)
+
+# Link Bank Account
+[View as Markdown](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/link-bank-account.md)
+
+```
+[data-radix-scroll-area-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}[data-radix-scroll-area-viewport]::-webkit-scrollbar{display:none}1curl -X POST https://https//https/accounts/api/v1/self/linking \2 -H "Content-Type: application/json" \3 -d "{ 4 \"accountNumber\":\"\", //ZB BANK ACCOUNT 5 \"mobile\":\"\" // SMILE CASH WALLET MOBILE NUMBER 6}"
+```
+
+
+```
+[data-radix-scroll-area-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}[data-radix-scroll-area-viewport]::-webkit-scrollbar{display:none}1{}
+```
+
+
+### Request
+
+### Response
+[NextLinked Bank Accounts](https://grey-crater-20531.docs.buildwithfern.com/smile-cash-wallet/bank-accounts/linked-bank-accounts)
+
+#### Linked Bank Accounts
+[Built with](https://buildwithfern.com/?utm_campaign=buildWith&utm_medium=docs&utm_source=grey-crater-20531.docs.buildwithfern.com)

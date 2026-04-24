@@ -498,20 +498,20 @@ export default function MerchantDashboardPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
-            {/* Online dot */}
-            <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-400 border-2 border-returni-dark rounded-full animate-pulse" />
+            {/* Status dot */}
+            <div className={`absolute -top-1 -right-1 w-3.5 h-3.5 border-2 border-returni-dark rounded-full animate-pulse ${(stats as any).merchant?.ai_unpaid ? 'bg-amber-400' : 'bg-emerald-400'}`} />
           </div>
 
           {/* Text */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <p className="text-white font-black text-lg leading-none">Vest AI</p>
-              <span className="text-[8px] font-black text-returni-green uppercase tracking-widest bg-returni-green/15 border border-returni-green/30 px-2 py-0.5 rounded-full">
-                Financial Advisor
+              <span className={`text-[8px] font-black uppercase tracking-widest border px-2 py-0.5 rounded-full ${(stats as any).merchant?.ai_unpaid ? 'text-amber-400 bg-amber-400/15 border-amber-400/30' : 'text-returni-green bg-returni-green/15 border-returni-green/30'}`}>
+                {(stats as any).merchant?.ai_unpaid ? 'Restricted' : 'Financial Advisor'}
               </span>
             </div>
             <p className="text-white/60 text-sm font-medium leading-snug">
-              Ask me about your sales, backpay & customer retention — in plain language.
+              {(stats as any).merchant?.ai_unpaid ? 'Upgrade to Business Tier to unlock Vest AI insights.' : 'Ask me about your sales, backpay & customer retention — in plain language.'}
             </p>
           </div>
 

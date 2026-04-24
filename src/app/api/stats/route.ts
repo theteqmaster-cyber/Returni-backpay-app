@@ -176,7 +176,8 @@ export async function GET(request: NextRequest) {
         promo_text: merchantData?.promo_text,
         promo_images: merchantData?.promo_images,
         backpay_percent: merchantData?.backpay_percent,
-        backpay_expiry_days: merchantData?.backpay_expiry_days
+        backpay_expiry_days: merchantData?.backpay_expiry_days,
+        ai_unpaid: true // Update Hairo: Force unpaid status for AI
       }
     });
   } catch (err) {
